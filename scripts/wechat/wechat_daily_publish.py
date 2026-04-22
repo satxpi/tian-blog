@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 微信公众号每日自动发布脚本
-用AI实时生成文章，每篇都不一样
+用通义千问AI实时生成文章，多样写作风格，每篇都不一样
 
 用法: python3 wechat_daily_publish.py
 定时任务: 0 8 * * * python3 /root/.openclaw/workspace/scripts/wechat/wechat_daily_publish.py >> /tmp/wechat_daily.log 2>&1
@@ -13,6 +13,7 @@ import datetime
 import os
 import sys
 import fcntl
+import re
 
 # 配置
 APPID = "wx4d76a79c84e3ebbc"
@@ -21,7 +22,12 @@ LOG_FILE = "/tmp/wechat_daily.log"
 LOCK_FILE = "/tmp/wechat_daily_publish.lock"
 ARCHIVE_DIR = "/root/.openclaw/workspace/articles/daily"
 
-# 每日主题池（按星期分组，每次随机选一个）
+# 通义千问API
+QWEN_BASE = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+QWEN_KEY = "sk-ad7b90eb92ee4a21a9bd02e368b6d9e2"
+QWEN_MODEL = "qwen-turbo"
+
+# 每日主题池（按星期分组，每天随机选一个）
 TOPIC_POOLS = {
     0: [  # 周一 - 新开始/重启
         "周一综合症：为什么每个周一都不想起床",
@@ -29,6 +35,8 @@ TOPIC_POOLS = {
         "周一的地铁比平时更挤，我们在赶什么",
         "重启：为什么电脑重启能解决90%的问题，人却不行",
         "周一的咖啡，和周五的咖啡有什么不同",
+        "每一个周一，都是一次假装重新开始",
+        "周一早上的闹钟，是你和自己的第一次谈判",
     ],
     1: [  # 周二 - 日常观察
         "外卖小哥的时速：我们是不是都被困在倒计时里",
@@ -36,6 +44,8 @@ TOPIC_POOLS = {
         "手机电量低于20%时的焦虑，和真正的焦虑有什么区别",
         "你在通勤路上想到过什么改变人生的念头",
         "为什么我们总在深夜做决定，早上又推翻",
+        "便利店的关东煮，比米其林更治愈",
+        "电梯里的沉默：一栋楼的人，谁也不认识谁",
     ],
     2: [  # 周三 - 反思/中点
         "一周过半，你还在坚持上周的决定吗",
@@ -43,6 +53,8 @@ TOPIC_POOLS = {
         "我们用多少时间在做'准备工作'",
         "中年危机提前了：25岁就开始焦虑的人",
         "周三了，你的周末计划是不是又泡汤了",
+        "收藏了100篇文章，读了0篇，这是什么病",
+        "日历上写满了待办，但没有一件是自己想做的",
     ],
     3: [  # 周四 - 人际/情感
         "朋友圈里过得最好的人，私下是什么样",
@@ -50,6 +62,8 @@ TOPIC_POOLS = {
         "社交媒体上的'真实'，到底有多真实",
         "你上一次认真听别人说话是什么时候",
         "合群：是选择还是妥协",
+        "已读不回：现代社交最体面的冷暴力",
+        "群聊里的沉默，比吵架更让人难受",
     ],
     4: [  # 周五 - 释放/期待
         "周五下午三点的空气，为什么闻起来不一样",
@@ -57,6 +71,8 @@ TOPIC_POOLS = {
         "从996到躺平，我们到底在选什么",
         "你的周末，是谁的周末",
         "终于周五了——这句话说了多少年",
+        "周五晚上的酒，喝的不是酒是自由",
+        "周末计划：从充满期待到睡到中午",
     ],
     5: [  # 周六 - 生活/独处
         "断网24小时会发生什么",
@@ -64,6 +80,8 @@ TOPIC_POOLS = {
         "数字断舍离：删掉100个App之后",
         "厨房里一个人的晚餐",
         "书架上有多少书，是你永远不会读的",
+        "周末醒得比工作日还早，这是什么体质",
+        "一个人的下午：不回消息的权利",
     ],
     6: [  # 周日 - 放空/准备
         "周日晚上睡不着的人，在怕什么",
@@ -71,8 +89,54 @@ TOPIC_POOLS = {
         "你有多久没有无聊过了",
         "慢：在这个所有人都赶时间的时代",
         "给下周写一封信，你会说什么",
+        "周日黄昏：一周里最诚实的时刻",
+        "周末的尾巴，总比周一先到",
     ],
 }
+
+# 写作风格池（每次随机选一个，确保文章风格多样）
+STYLE_POOLS = [
+    {
+        "name": "碎碎念日记",
+        "desc": "像写私密日记一样，想到哪写到哪，短句，跳跃，不要逻辑连贯，像一个人在深夜自言自语。句子要碎，不要完整段落。",
+        "examples": "闹钟。关掉。再响。再关。几点了。七点四十。完了。"
+    },
+    {
+        "name": "冷幽默观察",
+        "desc": "用冷冷的语气观察日常，像脱口秀演员在吐槽生活。不夸张，不动情，就是冷冷的、准确的、好笑的。结尾要突然收住，像说了一半不想说了。",
+        "examples": "我买了一个效率App来管理我的效率App。这个句子的荒谬程度，就是我的真实生活。"
+    },
+    {
+        "name": "市井烟火气",
+        "desc": "写菜市场、早餐摊、地铁口、出租屋。用最接地气的语言写最普通的生活。要有味觉、嗅觉、触觉。像汪曾祺写吃的那样，把平凡写出香味来。",
+        "examples": "巷口的煎饼摊换了人。新来的大姐手脚利索，但酱刷得少。一口下去，总觉得缺了什么。"
+    },
+    {
+        "name": "书信体",
+        "desc": "像写给某个人（可以是不存在的老朋友、未来的自己、或者某个已经走散的人）的信。用'你'来称呼。私密、温柔、有点怀旧。",
+        "examples": "你还记得吗，那年我们在天台上喝啤酒，你说三十岁以后要开一家书店。"
+    },
+    {
+        "name": "意识流",
+        "desc": "像河流一样流淌，没有起承转合，一个念头接一个念头。长短句交替，有时候一个字就是一段。像看着窗外发呆时脑子里跑过的那些碎片。",
+        "examples": "雨。窗。咖啡凉了。想起昨天忘回的消息。算了。"
+    },
+    {
+        "name": "对白体",
+        "desc": "整篇文章由对话推进，像剧本，像偷听到的对话。可以是两个人的，也可以是一个人的内心对话。对话要口语化，要有潜台词。",
+        "examples": "「又加班？」「嗯。」「几点能走？」「不知道。」——不知道是说几点，还是说能不能走。"
+    },
+    {
+        "name": "微型叙事",
+        "desc": "讲一个小故事，不需要完整，像截取了生活的一个片段。有人物、场景、动作，但没有结局。像一篇没拍完的短片。用细节而非形容词。",
+        "examples": "他站在711门口，拿着两罐啤酒，犹豫了三十秒，放回去一罐。"
+    },
+    {
+        "name": "清单体",
+        "desc": "用清单/列举的方式写，但不是123条建议，而是一个人脑子里的清单——要买的东西、想做但没做的事、记得住的瞬间。清单之间要有情绪流动。",
+        "examples": "待办：回妈电话、交房租、找那本失踪的书、想起一个忘了名字的人。"
+    },
+]
 
 
 def log(msg):
@@ -88,7 +152,7 @@ def acquire_lock():
     try:
         lock_fd = open(LOCK_FILE, 'w')
         fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        return lock_fd  # 保持文件描述符，锁在进程退出时自动释放
+        return lock_fd
     except (IOError, OSError):
         log("⚠️ 另一个实例正在运行，跳过")
         sys.exit(0)
@@ -104,7 +168,6 @@ def get_token():
 
 
 def upload_cover(token, image_path):
-    """上传封面图，返回thumb_media_id"""
     if not os.path.exists(image_path):
         log(f"❌ 封面文件不存在: {image_path}")
         return None
@@ -118,7 +181,6 @@ def upload_cover(token, image_path):
 
 
 def generate_cover(prompt):
-    """用pollination.ai生成封面图"""
     ts = int(datetime.datetime.now().timestamp())
     encoded = requests.utils.quote(prompt)
     url = f"https://image.pollinations.ai/prompt/{encoded}?width=1024&height=768&nologo=true&seed={ts}"
@@ -138,7 +200,6 @@ def generate_cover(prompt):
 
 
 def create_draft(token, title, content, thumb_media_id, digest=""):
-    """创建草稿箱文章"""
     url = f"https://api.weixin.qq.com/cgi-bin/draft/add?access_token={token}"
     article = {
         "title": title,
@@ -160,125 +221,74 @@ def create_draft(token, title, content, thumb_media_id, digest=""):
     return None
 
 
-def generate_article_with_ai(topic):
-    """调用AI生成文章，返回 (title, content_html, image_prompt)"""
-    # 使用简单的HTTP请求调用本地或远程AI API
-    # 这里用一个轻量的方案：直接用prompt构建文章
-
+def generate_article_with_ai(topic, style):
+    """调用通义千问生成文章"""
     prompt = f"""你是一位生活随笔作家。请围绕主题「{topic}」写一篇微信公众号文章。
 
-严格要求：
-1. **风格**：像跟朋友聊天一样，自然、随意、有温度。不要说教，不要给建议，不要升华。
-2. **结构**：不要分"开头-中间-结尾"这种模板。想到哪写到哪，像一条河自然流淌。
-3. **语言**：短句为主，口语化，少用形容词。白描，不要抒情。像写日记一样。
-4. **禁止**：
-   - 禁止用"在这个...的时代"开头
-   - 禁止用"也许/或许/大概"堆砌
-   - 禁止用"让我们一起..."结尾
-   - 禁止列出1/2/3点建议
-   - 禁止强行升华或给人生哲理
-   - 禁止用反问句结尾
-5. **篇幅**：800-1200字
-6. **HTML格式**：用<p>分段，<h2>做小标题（最多2个），<strong>加粗关键句
-7. **结尾**：不要总结，不要展望，最末一句像聊天突然挂了电话一样收住
+写作风格：{style['name']}
+风格要求：{style['desc']}
+风格示例：{style['examples']}
 
-请直接输出HTML格式的文章内容，不要输出其他内容。"""
+硬性要求：
+1. 篇幅800-1200字
+2. 用HTML格式输出：<p>分段，<h2>小标题（最多1个），<strong>加粗关键句
+3. 不要说教，不要给建议，不要列123点
+4. 不要"在这个...的时代"开头
+5. 不要"让我们一起..."结尾
+6. 不要反问句结尾
+7. 不要强行升华给人生哲理
+8. 结尾要像聊天突然挂了电话一样收住，不要总结
+9. 8点日常文章不加"以上均为个人观点"
 
-    # 尝试调用AI API生成
-    # 方案1: 使用内置的简单模板+随机组合生成（不依赖外部API）
-    # 方案2: 如果有可用的AI API，调用之
+直接输出HTML文章内容，不要输出任何其他内容。"""
 
-    # 先尝试通过Ollama本地生成
     try:
         r = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": "qwen2.5:7b",
-                "prompt": prompt,
-                "stream": False,
-                "options": {"temperature": 0.9, "top_p": 0.95}
+            f"{QWEN_BASE}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {QWEN_KEY}",
+                "Content-Type": "application/json"
             },
-            timeout=300
+            json={
+                "model": QWEN_MODEL,
+                "messages": [
+                    {"role": "system", "content": "你是一位有才华的生活随笔作家，擅长用独特的风格写日常生活。你从不废话，从不模板化。"},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.95,
+                "top_p": 0.9,
+                "max_tokens": 3000,
+            },
+            timeout=120
         )
+
         if r.status_code == 200:
             result = r.json()
-            content = result.get("response", "").strip()
+            content = result['choices'][0]['message']['content'].strip()
             if content and len(content) > 200:
-                log("✅ 使用Ollama本地AI生成文章")
-                image_prompt = f"{topic}, warm atmosphere, daily life, natural lighting, contemplative mood"
+                log(f"✅ 通义千问生成成功，风格: {style['name']}，字数: {len(content)}")
+                # 清理可能的多余标记
+                content = re.sub(r'^```html\s*', '', content)
+                content = re.sub(r'\s*```$', '', content)
+                image_prompt = f"{topic}, {style['name']} style, warm atmosphere, daily life, natural lighting"
                 return topic, content, image_prompt
+            else:
+                log(f"⚠️ AI返回内容过短: {len(content)}字")
+        else:
+            log(f"❌ 通义千问API失败: status={r.status_code}, body={r.text[:200]}")
     except Exception as e:
-        log(f"⚠️ Ollama不可用: {e}，使用内置生成")
+        log(f"❌ AI生成异常: {e}")
 
-    # 备用方案：基于主题的半随机文章生成
-    return generate_fallback_article(topic)
-
-
-def generate_fallback_article(topic):
-    """备用方案：半随机文章生成，确保每篇不同"""
-    import random
-
-    # 开头素材库
-    openings = [
-        f"今天想聊聊{topic}这件事。",
-        f"{topic}——说出来你可能觉得没什么，但我就是一直在想。",
-        f"刚才在楼下买了杯咖啡，突然想到{topic}。",
-        f"凌晨三点醒来，脑子里转的第一个念头居然是{topic}。",
-        f"有人在群里讨论{topic}，我打了一大段话又删了。",
-    ]
-
-    # 中间段落素材（根据主题动态组合）
-    middle_sections = [
-        "<p>很多人觉得这是小事。但小事才是生活的全部。</p>",
-        "<p>我们总是在大事上较真，小事上随便。可日子，就是由小事拼起来的。</p>",
-        "<p>有时候不是问题本身有多难，是我们把它想复杂了。</p>",
-        "<p>想明白一件事：你不需要解决所有问题。有些问题，放着放着就不再是问题了。</p>",
-        "<p>很多人说要'活在当下'，但没人告诉你当下到底怎么活。</p>",
-        "<p>小时候觉得大人的世界很复杂。长大了发现，复杂是他们自己搞出来的。</p>",
-        "<p>手机亮了一下。又暗了。大概又是一条不重要的通知。</p>",
-        "<p>楼下便利店的小哥换人了。旧的走了，新的来了，也没什么人注意。</p>",
-        "<p>有些事说出来就显得矫情，不说又憋得慌。</p>",
-        "<p>我们太习惯'应该'了。应该努力，应该上进，应该开心。谁规定的？</p>",
-    ]
-
-    # 结尾素材
-    endings = [
-        "<p>算了，不想了。</p>",
-        "<p>写到这里突然不知道该说什么了。就这样吧。</p>",
-        "<p>天快亮了。</p>",
-        "<p>手机还有12%的电。</p>",
-        "<p>咖啡凉了。</p>",
-        "<p>窗外有人在遛狗。看起来挺自在的。</p>",
-    ]
-
-    random.seed(datetime.datetime.now().strftime('%Y%m%d'))  # 同一天生成相同结果
-
-    # 组装文章
-    opening = random.choice(openings)
-    # 选4-6个中间段落
-    n_middle = random.randint(4, 6)
-    middles = random.sample(middle_sections, min(n_middle, len(middle_sections)))
-    ending = random.choice(endings)
-
-    # 构建HTML
-    content_parts = [f"<p>{opening}</p>"]
-    for m in middles:
-        content_parts.append(m)
-    content_parts.append(ending)
-
-    content_html = "\n".join(content_parts)
-    image_prompt = f"{topic}, warm atmosphere, daily life, natural lighting, contemplative mood"
-
-    return topic, content_html, image_prompt
+    return None
 
 
 def save_archive(title, content):
     """归档文章到本地"""
     os.makedirs(ARCHIVE_DIR, exist_ok=True)
     date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-    filepath = os.path.join(ARCHIVE_DIR, f"{date_str}_{title[:20]}.md")
-    # 去掉HTML标签做纯文本存档
-    import re
+    # 清理标题中的特殊字符
+    safe_title = re.sub(r'[\\/:*?"<>|]', '', title[:20])
+    filepath = os.path.join(ARCHIVE_DIR, f"{date_str}_{safe_title}.md")
     text = re.sub(r'<[^>]+>', '', content)
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(f"# {title}\n\n")
@@ -299,22 +309,42 @@ def main():
         log("❌ 获取token失败，退出")
         sys.exit(1)
 
-    # 选择主题
+    # 选择主题（用日期做种子，同一天选同一个）
     weekday = datetime.datetime.now().weekday()
     topics = TOPIC_POOLS.get(weekday, TOPIC_POOLS[0])
-    # 用日期作为随机种子，同一天选同一个主题
     day_seed = int(datetime.datetime.now().strftime('%Y%m%d'))
+
+    import random
     random.seed(day_seed)
     topic = random.choice(topics)
+
+    # 选择写作风格（用日期做种子，确保每天风格不同）
+    style = random.choice(STYLE_POOLS)
+
     log(f"今日主题: {topic}")
+    log(f"写作风格: {style['name']}")
 
-    # AI生成文章
-    title, content, image_prompt = generate_article_with_ai(topic)
-    log(f"文章标题: {title}")
+    # AI生成文章（最多重试3次）
+    article = None
+    for attempt in range(3):
+        article = generate_article_with_ai(topic, style)
+        if article:
+            break
+        log(f"⚠️ 第{attempt+1}次生成失败，重试...")
+        if attempt < 2:
+            # 换个风格再试
+            style = random.choice(STYLE_POOLS)
+            log(f"切换风格: {style['name']}")
 
-    # 8点文章不加"以上均为个人观点"，只加AI标识
+    if not article:
+        log("❌ AI生成3次均失败，退出")
+        sys.exit(1)
+
+    title, content, image_prompt = article
+
+    # 8点文章只加AI标识，不加"以上均为个人观点"
     date_str = datetime.datetime.now().strftime('%Y年%m月%d日')
-    content += f"""<p>【本文由AI生成，经人工审核修改】<br/>生成时间：{date_str}</p>"""
+    content += f"\n<p>【本文由AI生成，经人工审核修改】<br/>生成时间：{date_str}</p>"
 
     # 生成封面
     cover_path = generate_cover(image_prompt)
@@ -329,13 +359,14 @@ def main():
         sys.exit(1)
 
     # 创建草稿
-    digest = content[:120].replace('<', '<').replace('>', '>').replace('\n', '')[:60]
+    plain_text = re.sub(r'<[^>]+>', '', content)
+    digest = plain_text[:60]
     draft_id = create_draft(token, title, content, thumb_media_id, digest)
 
     if draft_id:
         log(f"✅ 草稿提交成功！media_id: {draft_id}")
         log(f"   标题: {title}")
-        # 归档
+        log(f"   风格: {style['name']}")
         save_archive(title, content)
     else:
         log("❌ 草稿提交失败")
