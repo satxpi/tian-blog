@@ -1,0 +1,2 @@
+{"type":"memory.recall.recorded","timestamp":"2026-04-17T04:00:37.261Z","query":"记忆系统 memory 文件结构","resultCount":1,"results":[{"path":"memory/2026-03-24.md","startLine":1,"endLine":36,"score":0.8125335712382837}]}
+{"type":"memory.recall.recorded","timestamp":"2026-04-17T04:00:56.339Z","query":"TencentDB AI-Memory 腾讯云数据库 AI记忆","resultCount":1,"results":[{"path":"memory/2026-03-24.md","startLine":1,"endLine":36,"score":0.8125335712382837}]}

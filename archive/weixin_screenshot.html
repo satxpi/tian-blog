@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>微信公众号平台登录页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .left-panel {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .right-panel {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: #07c160;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        .title {
+            font-size: 32px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 40px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        .qrcode-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .qrcode-placeholder {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #f0f0f0 25%, #e0e0e0 25%, #e0e0e0 50%, #f0f0f0 50%, #f0f0f0 75%, #e0e0e0 75%, #e0e0e0);
+            background-size: 20px 20px;
+            margin: 0 auto 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .qrcode-placeholder::before {
+            content: "📱";
+            font-size: 60px;
+            position: absolute;
+        }
+        
+        .qrcode-placeholder::after {
+            content: "";
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border: 2px dashed #07c160;
+            border-radius: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        
+        .qrcode-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 15px;
+        }
+        
+        .login-button {
+            background: #07c160;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .login-button:hover {
+            background: #06ad56;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(7, 193, 96, 0.3);
+        }
+        
+        .features {
+            margin-top: 40px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .feature-item:hover {
+            background: #e9ecef;
+            transform: translateX(10px);
+        }
+        
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: #07c160;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .feature-text h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .feature-text p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .instructions {
+            background: #f0f9ff;
+            border-left: 4px solid #1890ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #1890ff;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        .url-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+            word-break: break-all;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="left-panel">
+            <div class="logo">WX</div>
+            <h1 class="title">微信公众平台</h1>
+            <p class="subtitle">为媒体和个人提供一种新的信息传播方式<br>构建与读者之间更好的沟通与管理模式</p>
+            
+            <div class="qrcode-container">
+                <div class="qrcode-placeholder"></div>
+                <p class="qrcode-text">微信扫一扫登录</p>
+                <p class="qrcode-text" style="color: #07c160; font-weight: 600;">请用手机微信扫描二维码</p>
+            </div>
+            
+            <button class="login-button" onclick="window.open('https://mp.weixin.qq.com', '_blank')">
+                立即登录
+            </button>
+            
+            <div class="url-display">
+                https://mp.weixin.qq.com
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-text">
+                        <h3>扫码登录</h3>
+                        <p>使用微信扫码，安全便捷，无需记住密码</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-text">
+                        <h3>数据统计</h3>
+                        <p>实时查看阅读量、粉丝增长等关键数据</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">✏️</div>
+                    <div class="feature-text">
+                        <h3>内容管理</h3>
+                        <p>强大的图文编辑器和素材管理功能</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🔧</div>
+                    <div class="feature-text">
+                        <h3>高级功能</h3>
+                        <p>自定义菜单、自动回复、API接口等</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>🦐 登录步骤说明</h3>
+                <ol>
+                    <li>用手机微信扫描左侧二维码</li>
+                    <li>在手机上选择要登录的公众号</li>
+                    <li>点击"登录"按钮确认</li>
+                    <li>等待页面自动跳转到后台</li>
+                    <li>登录成功后告诉我，我会开始检查配置</li>
+                </ol>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+                <p>如果二维码不显示或扫描失败：</p>
+                <p>请直接访问：<strong>https://mp.weixin.qq.com</strong></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 简单的交互效果
+        document.querySelectorAll('.feature-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(10px)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+        
+        // 二维码脉冲动画
+        const qrCode = document.querySelector('.qrcode-placeholder');
+        setInterval(() => {
+            qrCode.style.animation = 'none';
+            setTimeout(() => {
+                qrCode.style.animation = 'pulse 2s infinite';
+            }, 10);
+        }, 4000);
+    </script>
+</body>
+</html>

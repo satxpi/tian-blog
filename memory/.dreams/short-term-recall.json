@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-17T04:00:56.339Z",
+  "entries": {
+    "memory:memory/2026-03-24.md:1:36": {
+      "key": "memory:memory/2026-03-24.md:1:36",
+      "path": "memory/2026-03-24.md",
+      "startLine": 1,
+      "endLine": 36,
+      "source": "memory",
+      "snippet": "### [INFRA] OpenClaw 记忆方案配置 - **结论**: lossless-claw 已废弃，改用 legacy + memory-core + self-improving 三件套 - **文件变更**: - skills/self-improving-agent/ (新安装) - .learnings/LEARNINGS.md, ERRORS.md, FEATURE_REQUESTS.md (新创建) - **标签**: #memory #openclaw #config #### 组件说明 | 组件 | 状态 | 作用 | 数据位置 | |------|------|------|----------| | legacy 引擎 | ✅ 已配置 | 上下文压缩（原 lossless-claw 核心） | ~/.openclaw/agents/main/sessions/*.jsonl | | memory-core | ✅ 已加载 | 文件搜索（memory_search/memory_get 工具） | ~/.openclaw/memory/main.sqlite | | self-improving | ✅ 新安装 | 自动记录错误和学习 | ~/.openclaw/workspace/.learnings/ | #### 配置文件 - `contextEngine: legacy` 在 ~/.openclaw/openclaw.json 的 plugins.slots 中 - 不需要 OpenAI key（memory-lance",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 1.6250671424765675,
+      "maxScore": 0.8125335712382837,
+      "firstRecalledAt": "2026-04-17T04:00:37.261Z",
+      "lastRecalledAt": "2026-04-17T04:00:56.339Z",
+      "queryHashes": [
+        "9880b678fde1",
+        "f18e3767ae3d"
+      ],
+      "recallDays": [
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openai",
+        "lossless-claw",
+        "memory-core",
+        "self-improving",
+        "skills/self-improving-agent",
+        "learnings/learnings.md",
+        "errors.md",
+        "feature-requests.md"
+      ]
+    }
+  }
+}

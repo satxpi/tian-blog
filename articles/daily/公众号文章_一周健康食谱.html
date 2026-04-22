@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🥗 一周健康食谱 | 科学搭配，轻松坚持</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            background: #f9f9f9;
+        }
+        
+        .article-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #07c160;
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #07c160;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .author {
+            color: #999;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #07c160;
+        }
+        
+        .section-title {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: "📌";
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        
+        .day-plan {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .day-title {
+            color: #07c160;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .day-title::before {
+            content: "📅";
+            margin-right: 8px;
+        }
+        
+        .meal {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .meal-title {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .tip-box {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .tip-title {
+            color: #1890ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .tip-title::before {
+            content: "💡";
+            margin-right: 8px;
+        }
+        
+        .shopping-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .shopping-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .keyword-box {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .keyword {
+            display: inline-block;
+            background: #07c160;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .challenge {
+            background: #fff7e6;
+            border: 2px solid #ffd666;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .challenge-title {
+            color: #fa8c16;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .article-container {
+                padding: 20px;
+            }
+            
+            .shopping-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="article-container">
+        <h1>🥗 一周健康食谱 | 科学搭配，轻松坚持</h1>
+        
+        <div class="subtitle">告别外卖焦虑！AI为您定制的7天健康食谱来了～</div>
+        
+        <div class="author">作者：智能生活家 | 发布时间：2026年4月17日</div>
+        
+        <div class="section">
+            <div class="section-title">📊 设计原则</div>
+            <p>✅ <strong>营养均衡</strong>：蛋白质25-30%、碳水45-50%</p>
+            <p>✅ <strong>操作简单</strong>：每餐≤30分钟</p>
+            <p>✅ <strong>成本可控</strong>：每周150-200元</p>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">🗓️ 每日食谱详情</div>
+            
+            <div class="day-plan">
+                <div class="day-title">【周一】清爽启动</div>
+                <div class="meal">
+                    <div class="meal-title">早餐（7:00-8:00）</div>
+                    <p>燕麦粥（50g燕麦+200ml低脂牛奶）<br>水煮蛋1个<br>小番茄5-6颗</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">午餐（12:00-13:00）</div>
+                    <p>鸡胸肉沙拉（150g鸡胸肉+生菜+黄瓜+彩椒）<br>糙米饭半碗（约100g）<br>柠檬水</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">晚餐（18:00-19:00）</div>
+                    <p>清蒸鲈鱼（200g）<br>蒜蓉西兰花（150g）<br>紫菜蛋花汤</p>
+                </div>
+            </div>
+            
+            <div class="day-plan">
+                <div class="day-title">【周二】蛋白质强化日</div>
+                <div class="meal">
+                    <div class="meal-title">早餐</div>
+                    <p>全麦吐司2片+花生酱<br>豆浆200ml<br>香蕉1根</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">午餐</div>
+                    <p>牛肉炒西兰花（牛肉150g+西兰花200g）<br>杂粮饭1碗<br>豆腐汤</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">晚餐</div>
+                    <p>虾仁炒蛋（虾仁100g+鸡蛋2个）<br>凉拌黄瓜<br>小米粥</p>
+                </div>
+            </div>
+            
+            <div class="day-plan">
+                <div class="day-title">【周三】素食日</div>
+                <div class="meal">
+                    <div class="meal-title">早餐</div>
+                    <p>蔬菜粥（大米+胡萝卜+香菇+菠菜）<br>茶叶蛋1个</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">午餐</div>
+                    <p>麻婆豆腐（豆腐300g+少量肉末）<br>清炒时蔬<br>红薯1个</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">晚餐</div>
+                    <p>番茄菌菇汤<br>凉拌海带丝<br>蒸南瓜</p>
+                </div>
+            </div>
+            
+            <div class="day-plan">
+                <div class="day-title">【周四】地中海风味</div>
+                <div class="meal">
+                    <div class="meal-title">早餐</div>
+                    <p>希腊酸奶+燕麦+蓝莓+蜂蜜<br>全麦面包1片</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">午餐</div>
+                    <p>烤三文鱼（150g）+柠檬<br>藜麦沙拉<br>橄榄油拌蔬菜</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">晚餐</div>
+                    <p>鸡肉蔬菜卷（鸡胸肉+生菜+番茄+黄瓜）<br>鹰嘴豆泥<br>蔬菜汤</p>
+                </div>
+            </div>
+            
+            <div class="day-plan">
+                <div class="day-title">【周五】亚洲风味</div>
+                <div class="meal">
+                    <div class="meal-title">早餐</div>
+                    <p>粥+酱菜+皮蛋<br>豆浆</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">午餐</div>
+                    <p>日式照烧鸡腿饭（去鸡皮）<br>味增汤<br>海藻沙拉</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">晚餐</div>
+                    <p>越南春卷（虾+蔬菜+米粉）<br>泰式酸辣汤<br>芒果糯米饭（小份）</p>
+                </div>
+            </div>
+            
+            <div class="day-plan">
+                <div class="day-title">【周六】自由搭配日</div>
+                <div class="meal">
+                    <div class="meal-title">早餐</div>
+                    <p>自制三明治（全麦面包+火腿+生菜+番茄）<br>牛奶</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">午餐</div>
+                    <p>选择外食：日料/轻食沙拉<br><em>外食原则：少油少盐，控制分量</em></p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">晚餐</div>
+                    <p>家庭火锅（清汤锅底）<br><em>推荐食材：牛肉片、虾、豆腐、各种蔬菜</em><br><em>蘸料：酱油+蒜+香菜，避免芝麻酱</em></p>
+                </div>
+            </div>
+            
+            <div class="day-plan">
+                <div class="day-title">【周日】准备日</div>
+                <div class="meal">
+                    <div class="meal-title">早餐</div>
+                    <p>煎蛋+火腿+吐司<br>果汁</p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">午餐</div>
+                    <p>剩余食材创意料理<br><em>例：炒饭/面条（控制油量）</em></p>
+                </div>
+                <div class="meal">
+                    <div class="meal-title">晚餐</div>
+                    <p>清蒸海鲜<br>蔬菜大拌菜<br>杂粮粥</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">🛒 一周食材采购清单</div>
+            <p><strong>预算：约200元/周</strong></p>
+            
+            <div class="shopping-list">
+                <div class="shopping-item">
+                    <strong>主食类（40元）</strong><br>
+                    燕麦 500g<br>
+                    糙米 1kg<br>
+                    全麦吐司 1袋<br>
+                    杂粮（小米、藜麦）
+                </div>
+                
+                <div class="shopping-item">
+                    <strong>蛋白质类（80元）</strong><br>
+                    鸡胸肉 500g<br>
+                    牛肉 300g<br>
+                    虾仁 300g<br>
+                    鸡蛋 12个<br>
+                    豆腐 2块
+                </div>
+                
+                <div class="shopping-item">
+                    <strong>蔬菜类（40元）</strong><br>
+                    西兰花 2颗<br>
+                    生菜 2颗<br>
+                    黄瓜 3根<br>
+                    番茄 5个<br>
+                    彩椒 3个
+                </div>
+                
+                <div class="shopping-item">
+                    <strong>水果类（30元）</strong><br>
+                    香蕉 1把<br>
+                    苹果 4个<br>
+                    橙子 3个<br>
+                    小番茄 1盒
+                </div>
+            </div>
+        </div>
+        
+        <div class="tip-box">
+            <div class="tip-title">💡 智能生活小贴士</div>
+            <p><strong>1. 批量准备技巧</strong><br>
+            • 周日晚上：洗切蔬菜，分装保鲜盒<br>
+            • 一次煮好3天的糙米，冷藏保存<br>
+            • 鸡胸肉可一次性腌制，分装冷冻</p>
+            
+            <p><strong>2. 时间管理</strong><br>
+            • 早餐：提前一晚准备<br>
+            • 午餐：利用前一晚的剩余食材<br>
+            • 晚餐：30分钟快手菜</p>
+            
+            <p><strong>3. 外食应对策略</strong><br>
+            • 选择清蒸、烤、煮的烹饪方式<br>
+            • 要求酱料分开上<br>
+            • 先喝汤，再吃蔬菜，最后主食和蛋白质</p>
+            
+            <p><strong>4. 饮水建议</strong><br>
+            • 每日2000ml温水<br>
+            • 餐前一杯水，增加饱腹感<br>
+            • 避免含糖饮料</p>
+        </div>
+        
+        <div class="keyword-box">
+            <div class="section-title">📱 AI智能提醒服务</div>
+            <p>想要更个性化的食谱？关注我们，回复以下关键词获取：</p>
+            <div>
+                <span class="keyword">「减脂」</span>
+                <span class="keyword">「增肌」</span>
+                <span class="keyword">「素食」</span>
+                <span class="keyword">「快手」</span>
+                <span class="keyword">「预算」</span>
+            </div>
+            <p style="margin-top: 15px;">回复对应关键词，获取专属食谱！</p>
+        </div>
+        
+        <div class="challenge">
+            <div class="challenge-title">🎯 本周挑战</div>
+            <p><strong>完成一周健康饮食打卡</strong></p>
+            <p>1. 每天拍照记录三餐<br>
+            2. 记录体重变化（可选）<br>
+            3. 分享你的烹饪心得</p>
+            
+            <p style="margin-top: 20px;"><strong>完成挑战的读者将有机会获得：</strong><br>
+            • 下期食谱优先定制权<br>
+            • 健康食材大礼包（抽奖）<br>
+            • 一对一营养咨询（限前10名）</p>
+        </div>
+        
+        <div class="tip-box">
+            <div class="tip-title">🌟 智能生活家提醒您</div>
+            <p>健康饮食不是短期节食，而是长期的生活方式改变。从这一周开始，让AI成为您的私人营养师！</p>
+            <p style="margin-top: 10px;"><strong>下期预告：</strong>《智能家居如何帮你坚持健康饮食？——厨房黑科技大揭秘》</p>
+        </div>
+        
+        <div class="footer">
+            <p>本文由「智能生活家」AI营养师生成</p>
+            <p>数据基于中国居民膳食指南（2022）</p>
+            <p>实际执行请根据个人身体状况调整，如有特殊健康需求请咨询专业医生</p>
+            <p style="margin-top: 15px;">#健康食谱 #一周食谱 #健康饮食 #

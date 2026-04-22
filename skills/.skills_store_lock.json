@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "find-skills-skill": {
+      "name": "Find Skills Skill",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=find-skills-skill",
+      "source": "skillhub",
+      "version": "1.0.0"
+    },
+    "openai-whisper": {
+      "name": "Openai Whisper",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=openai-whisper",
+      "source": "skillhub",
+      "version": "1.0.0"
+    },
+    "self-improving-agent": {
+      "name": "self-improving-agent",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=self-improving-agent",
+      "source": "skillhub",
+      "version": "1.0.11"
+    }
+  }
+}

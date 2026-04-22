@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>股票日记</title>
+  <link rel="stylesheet" href="/stock/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <!-- 侧边导航 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <i class="fa-solid fa-chart-line"></i>
+      <span>股票日记</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="daily">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>日报</span>
+      </a>
+      <a href="#" class="nav-item" data-page="weekly">
+        <i class="fa-solid fa-calendar-week"></i>
+        <span>周报</span>
+      </a>
+      <a href="#" class="nav-item" data-page="watchlist">
+        <i class="fa-solid fa-star"></i>
+        <span>关注</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="market-status" id="marketStatus">
+        <span class="status-dot"></span>
+        <span id="statusText">市场已收盘</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="main-content">
+    <!-- 大盘指数栏 -->
+    <div class="index-bar" id="indexBar">
+      <div class="index-item" id="idx-000001">
+        <span class="idx-name">上证指数</span>
+        <span class="idx-price">--</span>
+        <span class="idx-change">--</span>
+      </div>
+      <div class="index-divider"></div>
+      <div class="index-item" id="idx-399001">
+        <span class="idx-name">深证成指</span>
+        <span class="idx-price">--</span>
+        <span class="idx-change">--</span>
+      </div>
+      <div class="index-divider"></div>
+      <div class="index-item" id="idx-399006">
+        <span class="idx-name">创业板指</span>
+        <span class="idx-price">--</span>
+        <span class="idx-change">--</span>
+      </div>
+      <div class="index-meta">
+        <span class="idx-update-time" id="idxUpdateTime">行情加载中...</span>
+        <button class="idx-refresh" onclick="fetchIndex()" title="刷新行情"><i class="fa-solid fa-rotate"></i></button>
+      </div>
+    </div>
+
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="pageTitle">日报</h1>
+        <span class="page-date" id="pageDate"></span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-new" id="btnNew">
+          <i class="fa-solid fa-plus"></i> 新建记录
+        </button>
+      </div>
+    </header>
+
+    <!-- 日报页面 -->
+    <section class="page active" id="page-daily">
+      <div class="date-navigator">
+        <button class="date-btn" id="prevDay"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="current-date" id="dailyCurrentDate"></span>
+        <button class="date-btn" id="nextDay"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+
+      <div class="daily-grid">
+        <!-- 早盘报道 -->
+        <div class="card card-morning">
+          <div class="card-header">
+            <div class="card-icon morning-icon"><i class="fa-solid fa-sun"></i></div>
+            <div>
+              <h2 class="card-title">早盘报道</h2>
+              <p class="card-subtitle">开盘前分析 · 盘中跟踪</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-edit btn-refresh-data" onclick="refreshMorning()" title="刷新/自动获取早报数据"><i class="fa-solid fa-rotate"></i></button>
+              <button class="btn-edit" onclick="openMorningEditor()"><i class="fa-solid fa-pen"></i></button>
+            </div>
+          </div>
+          <div class="card-body" id="morningContent">
+            <div class="empty-state" id="morningEmpty">
+              <i class="fa-solid fa-sun empty-icon"></i>
+              <p>今日早盘报道尚未记录</p>
+              <button class="btn-write" onclick="openMorningEditor()">开始记录</button>
+            </div>
+            <div class="report-content hidden" id="morningReport"></div>
+          </div>
+        </div>
+
+        <!-- 盘后总结 -->
+        <div class="card card-afternoon">
+          <div class="card-header">
+            <div class="card-icon afternoon-icon"><i class="fa-solid fa-moon"></i></div>
+            <div>
+              <h2 class="card-title">盘后总结</h2>
+              <p class="card-subtitle">收盘复盘 · 经验沉淀</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-edit btn-refresh-data" onclick="refreshAfternoon()" title="刷新/自动获取盘后数据"><i class="fa-solid fa-rotate"></i></button>
+              <button class="btn-edit" onclick="openAfternoonEditor()"><i class="fa-solid fa-pen"></i></button>
+            </div>
+          </div>
+          <div class="card-body" id="afternoonContent">
+            <div class="empty-state" id="afternoonEmpty">
+              <i class="fa-solid fa-moon empty-icon"></i>
+              <p>今日盘后总结尚未记录</p>
+              <button class="btn-write" onclick="openAfternoonEditor()">开始记录</button>
+            </div>
+            <div class="report-content hidden" id="afternoonReport"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 实时市场数据 -->
+      <div class="market-data-grid">
+        <!-- 板块资金流向 -->
+        <div class="card card-sector">
+          <div class="card-header">
+            <div class="card-icon sector-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+            <div>
+              <h2 class="card-title">板块资金流向</h2>
+              <p class="card-subtitle">实时 · 主力净流入排行</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-edit" onclick="fetchSector()" title="刷新"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+          </div>
+          <div class="card-body" id="sectorBody">
+            <div class="loading-state"><i class="fa-solid fa-circle-notch fa-spin"></i> 加载中...</div>
+          </div>
+        </div>
+
+        <!-- 热点快讯 -->
+        <div class="card card-news">
+          <div class="card-header">
+            <div class="card-icon news-icon"><i class="fa-solid fa-bolt"></i></div>
+            <div>
+              <h2 class="card-title">热点快讯</h2>
+              <p class="card-subtitle">今日公告 · 市场动态</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-edit" onclick="fetchNews()" title="刷新"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+          </div>
+          <div class="card-body" id="newsBody">
+            <div class="loading-state"><i class="fa-solid fa-circle-notch fa-spin"></i> 加载中...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 日报列表 -->
+      <div class="section-title">
+        <i class="fa-solid fa-history"></i> 历史日报
+      </div>
+      <div class="records-list" id="dailyRecordsList"></div>
+    </section>
+
+    <!-- 周报页面 -->
+    <section class="page" id="page-weekly">
+      <div class="week-navigator">
+        <button class="date-btn" id="prevWeek"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="current-date" id="weeklyCurrentDate"></span>
+        <button class="date-btn" id="nextWeek"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+
+      <div class="weekly-grid">
+        <!-- 周度总结 -->
+        <div class="card card-summary">
+          <div class="card-header">
+            <div class="card-icon summary-icon"><i class="fa-solid fa-chart-bar"></i></div>
+            <div>
+              <h2 class="card-title">本周总结</h2>
+              <p class="card-subtitle">市场回顾 · 操作复盘</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-edit btn-refresh-data" onclick="refreshWeekly()" title="刷新/自动获取周总结数据"><i class="fa-solid fa-rotate"></i></button>
+              <button class="btn-edit" onclick="openWeeklyEditor()"><i class="fa-solid fa-pen"></i></button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="empty-state" id="weeklySummaryEmpty">
+              <i class="fa-solid fa-chart-bar empty-icon"></i>
+              <p>本周总结尚未记录</p>
+              <button class="btn-write" onclick="openWeeklyEditor()">开始记录</button>
+            </div>
+            <div class="report-content hidden" id="weeklySummaryReport"></div>
+          </div>
+        </div>
+
+        <!-- 下周推荐 -->
+        <div class="card card-recommend">
+          <div class="card-header">
+            <div class="card-icon recommend-icon"><i class="fa-solid fa-rocket"></i></div>
+            <div>
+              <h2 class="card-title">下周推荐股票</h2>
+              <p class="card-subtitle">精选5支 · 仅供参考</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-refresh" id="btnRefreshRecommend" onclick="refreshRecommendList()" title="刷新推荐股票"><i class="fa-solid fa-rotate-right"></i></button>
+              <button class="btn-edit" onclick="openRecommendEditor()"><i class="fa-solid fa-pen"></i></button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="empty-state" id="recommendEmpty">
+              <i class="fa-solid fa-rocket empty-icon"></i>
+              <p>下周推荐股票尚未设置</p>
+              <button class="btn-write" onclick="openRecommendEditor()">添加推荐</button>
+            </div>
+            <div id="recommendStockList" class="stock-grid hidden"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 周报历史 -->
+      <div class="section-title">
+        <i class="fa-solid fa-history"></i> 历史周报
+      </div>
+      <div class="records-list" id="weeklyRecordsList"></div>
+    </section>
+
+    <!-- 关注板块页面 -->
+    <section class="page" id="page-watchlist">
+      <div class="watchlist-tabs">
+        <button class="tab active" data-tab="recommended">
+          <i class="fa-solid fa-rocket"></i> 推荐关注
+        </button>
+        <button class="tab" data-tab="holdings">
+          <i class="fa-solid fa-briefcase"></i> 当前持仓
+        </button>
+      </div>
+
+      <!-- 推荐关注 -->
+      <div class="tab-content active" id="tab-recommended">
+        <div class="watchlist-header">
+          <h3>本周推荐股票</h3>
+          <span class="tag tag-blue">共 <span id="recommendCount">0</span> 只</span>
+          <button class="btn-new small" style="margin-left:auto" onclick="fetchWatchlistQuotes()">
+            <i class="fa-solid fa-rotate"></i> 刷新报价
+          </button>
+          <button class="btn-new small" style="margin-left:8px" onclick="openAddWatchStock()">
+            <i class="fa-solid fa-plus"></i> 手动添加
+          </button>
+        </div>
+        <div id="watchlistRecommended" class="stock-cards-container">
+          <div class="empty-state">
+            <i class="fa-solid fa-rocket empty-icon"></i>
+            <p>暂无推荐股票，请在周报中添加</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 当前持仓 -->
+      <div class="tab-content" id="tab-holdings">
+        <div class="watchlist-header">
+          <h3>当前持仓</h3>
+          <button class="btn-new small" onclick="openHoldingEditor()">
+            <i class="fa-solid fa-plus"></i> 添加持仓
+          </button>
+          <button class="btn-new small" id="btnRefreshHoldings" onclick="fetchHoldingQuotes()" style="margin-left:8px;background:var(--bg3);color:var(--text-sub);border:1px solid var(--border);">
+            <i class="fa-solid fa-rotate"></i> 刷新报价
+          </button>
+          <span id="holdingUpdateTime" style="font-size:11px;color:var(--text-muted);margin-left:10px;"></span>
+        </div>
+        <div id="holdingsTable" class="holdings-container">
+          <div class="empty-state">
+            <i class="fa-solid fa-briefcase empty-icon"></i>
+            <p>暂无持仓记录</p>
+            <button class="btn-write" onclick="openHoldingEditor()">添加持仓</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       早盘报道 - 简单编辑器弹窗
+       ============================================================ -->
+  <div class="modal-overlay" id="editorModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">编辑记录</h3>
+        <button class="modal-close" onclick="closeModal('editorModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>标题</label>
+          <input type="text" id="editorTitle" class="form-input" placeholder="输入标题...">
+        </div>
+        <div class="form-group">
+          <label>正文内容</label>
+          <div class="editor-toolbar">
+            <button onclick="insertTemplate('morning')" title="插入模板"><i class="fa-solid fa-file-lines"></i> 模板</button>
+          </div>
+          <textarea id="editorContent" class="form-textarea" placeholder="记录今天的市场观察、操作思路..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>市场情绪</label>
+          <div class="sentiment-selector">
+            <button class="sentiment-btn" data-value="bullish" onclick="setSentiment('bullish')">
+              <i class="fa-solid fa-arrow-trend-up"></i> 看多
+            </button>
+            <button class="sentiment-btn active" data-value="neutral" onclick="setSentiment('neutral')">
+              <i class="fa-solid fa-minus"></i> 中性
+            </button>
+            <button class="sentiment-btn" data-value="bearish" onclick="setSentiment('bearish')">
+              <i class="fa-solid fa-arrow-trend-down"></i> 看空
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('editorModal')">取消</button>
+        <button class="btn-save" onclick="saveReport()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       盘后总结 - 结构化五大板块编辑器
+       ============================================================ -->
+  <div class="modal-overlay" id="afternoonModal">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-moon"></i> 盘后总结 — 结构化复盘</h3>
+        <button class="modal-close" onclick="closeModal('afternoonModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body structured-editor">
+
+        <!-- 标题 & 情绪 -->
+        <div class="se-row two-col">
+          <div class="form-group">
+            <label>今日标题</label>
+            <input type="text" id="afTitle" class="form-input" placeholder="如：震荡筑底，科技板块领涨">
+          </div>
+          <div class="form-group">
+            <label>市场情绪</label>
+            <div class="sentiment-selector">
+              <button class="sentiment-btn" data-value="bullish" onclick="setAfSentiment('bullish')"><i class="fa-solid fa-arrow-trend-up"></i> 看多</button>
+              <button class="sentiment-btn active" data-value="neutral" onclick="setAfSentiment('neutral')"><i class="fa-solid fa-minus"></i> 中性</button>
+              <button class="sentiment-btn" data-value="bearish" onclick="setAfSentiment('bearish')"><i class="fa-solid fa-arrow-trend-down"></i> 看空</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第一节：盘后数据收集 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">一</span>
+            <i class="fa-solid fa-database"></i>
+            盘后数据收集 — 各大指数
+          </div>
+          <div class="se-indices-grid" id="afIndicesGrid">
+            <!-- 动态生成 -->
+          </div>
+          <button class="btn-add-small" onclick="addIndexRow()"><i class="fa-solid fa-plus"></i> 添加指数</button>
+        </div>
+
+        <!-- 第二节：市场整体分析 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">二</span>
+            <i class="fa-solid fa-chart-line"></i>
+            市场整体分析 — 把握大方向
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label><i class="fa-solid fa-arrow-trend-up"></i> 指数走势分析</label>
+              <select class="form-input" id="afTrend">
+                <option value="">请选择趋势...</option>
+                <option value="上涨趋势">📈 上涨趋势</option>
+                <option value="下跌趋势">📉 下跌趋势</option>
+                <option value="盘整震荡">↔️ 盘整震荡</option>
+                <option value="高位盘整">⬆️ 高位盘整</option>
+                <option value="低位筑底">⬇️ 低位筑底</option>
+                <option value="反弹修复">🔄 反弹修复</option>
+              </select>
+              <textarea class="form-textarea short" id="afTrendDetail" placeholder="详细描述今日指数的走势特征，如开盘高开低走，下午盘缓步回升..."></textarea>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-money-bill-transfer"></i> 资金流向分析</label>
+              <div class="se-row two-col" style="margin-bottom:8px">
+                <div>
+                  <label class="sub-label">北向资金</label>
+                  <input type="text" class="form-input" id="afNorthFund" placeholder="如：净流入 +32亿">
+                </div>
+                <div>
+                  <label class="sub-label">主力资金</label>
+                  <input type="text" class="form-input" id="afMainFund" placeholder="如：净流出 -58亿">
+                </div>
+              </div>
+              <textarea class="form-textarea short" id="afFundDetail" placeholder="资金流向的综合判断，北向是否持续买入，主力是否出逃..."></textarea>
+            </div>
+          </div>
+          <div class="se-row three-col">
+            <div class="form-group">
+              <label><i class="fa-solid fa-face-smile"></i> 市场情绪</label>
+              <select class="form-input" id="afSentimentLevel">
+                <option value="">请选择...</option>
+                <option value="高涨">🔥 高涨</option>
+                <option value="偏热">😊 偏热</option>
+                <option value="平淡">😐 平淡</option>
+                <option value="低迷">😔 低迷</option>
+                <option value="恐慌">😱 恐慌</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-chart-bar"></i> 成交量（亿元）</label>
+              <input type="text" class="form-input" id="afVolume" placeholder="如：全市场 8500亿">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-up-down"></i> 涨跌家数</label>
+              <div class="se-row two-col" style="gap:6px">
+                <input type="text" class="form-input" id="afAdvance" placeholder="上涨 xxxx">
+                <input type="text" class="form-input" id="afDecline" placeholder="下跌 xxxx">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>市场情绪综合判断</label>
+            <textarea class="form-textarea short" id="afSentimentDetail" placeholder="综合成交量、涨跌家数、情绪指标，判断今日市场氛围..."></textarea>
+          </div>
+        </div>
+
+        <!-- 第三节：板块深度剖析 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">三</span>
+            <i class="fa-solid fa-layer-group"></i>
+            板块深度剖析 — 找到市场主线
+          </div>
+          <div class="form-group">
+            <label>前三大领涨板块（逐一深度挖掘）</label>
+            <div id="afTopSectors">
+              <!-- 动态生成 -->
+            </div>
+            <button class="btn-add-small" onclick="addTopSector()" id="addSectorBtn"><i class="fa-solid fa-plus"></i> 添加板块</button>
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label><i class="fa-solid fa-share-nodes"></i> 板块联动性分析</label>
+              <select class="form-input" id="afLinkage">
+                <option value="">请选择...</option>
+                <option value="板块内普涨，热度高、持续性强">普涨态势（热度高、持续性强）</option>
+                <option value="少数龙头领涨，分化明显">龙头领涨（分化明显）</option>
+                <option value="涨跌互现，无明显主线">涨跌互现（无明显主线）</option>
+                <option value="轮番拉升，快进快出">轮番拉升（快进快出）</option>
+              </select>
+              <textarea class="form-textarea short" id="afLinkageDetail" placeholder="描述板块内个股联动情况..."></textarea>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-rotate"></i> 板块轮动分析</label>
+              <textarea class="form-textarea" id="afRotation" placeholder="分析今日是否存在板块轮动现象，如：科技→消费→金融，描述轮动规律及未来方向..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第四节：关注个股详细回顾 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">四</span>
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            关注个股详细回顾 — 聚焦操作标的
+          </div>
+          <div id="afStockReviews">
+            <!-- 动态生成 -->
+          </div>
+          <button class="btn-add-small" onclick="addStockReview()"><i class="fa-solid fa-plus"></i> 添加个股分析</button>
+        </div>
+
+        <!-- 第五节：次日计划 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">五</span>
+            <i class="fa-solid fa-calendar-day"></i>
+            次日操作计划 — 明确操作方向
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label><i class="fa-solid fa-crosshairs"></i> 目标板块与个股</label>
+              <textarea class="form-textarea" id="afTargetSectors" placeholder="结合板块分析，筛选出次日可能走强的板块及具体个股..."></textarea>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-shield-halved"></i> 风险防范</label>
+              <textarea class="form-textarea" id="afRiskWarning" placeholder="预判次日可能出现的风险因素，如：政策面消息、技术面压力位、市场情绪反转信号..."></textarea>
+            </div>
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label><i class="fa-solid fa-arrow-up-right-dots"></i> 买入计划</label>
+              <textarea class="form-textarea" id="afBuyPlan" placeholder="目标个股的买入价格区间、计划仓位、止损点..."></textarea>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-arrow-down-right-dots"></i> 卖出计划</label>
+              <textarea class="form-textarea" id="afSellPlan" placeholder="持有个股的卖出条件、止盈价位、仓位减持计划..."></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /structured-editor -->
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('afternoonModal')">取消</button>
+        <button class="btn-save" onclick="saveAfternoon()"><i class="fa-solid fa-floppy-disk"></i> 保存复盘</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       周报 - 结构化编辑器
+       ============================================================ -->
+  <div class="modal-overlay" id="weeklyModal">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-calendar-week"></i> 周报 — 结构化周度复盘</h3>
+        <button class="modal-close" onclick="closeModal('weeklyModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body structured-editor">
+
+        <!-- 标题 & 情绪 -->
+        <div class="se-row two-col">
+          <div class="form-group">
+            <label>本周标题</label>
+            <input type="text" id="wkTitle" class="form-input" placeholder="如：指数底部震荡，科技主线延续">
+          </div>
+          <div class="form-group">
+            <label>本周市场情绪</label>
+            <div class="sentiment-selector">
+              <button class="sentiment-btn" data-value="bullish" onclick="setWkSentiment('bullish')"><i class="fa-solid fa-arrow-trend-up"></i> 看多</button>
+              <button class="sentiment-btn active" data-value="neutral" onclick="setWkSentiment('neutral')"><i class="fa-solid fa-minus"></i> 中性</button>
+              <button class="sentiment-btn" data-value="bearish" onclick="setWkSentiment('bearish')"><i class="fa-solid fa-arrow-trend-down"></i> 看空</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第一节：周度指数表现 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">一</span>
+            <i class="fa-solid fa-database"></i>
+            周度数据收集 — 各大指数周表现
+          </div>
+          <div class="se-indices-grid" id="wkIndicesGrid"></div>
+          <button class="btn-add-small" onclick="addWkIndexRow()"><i class="fa-solid fa-plus"></i> 添加指数</button>
+        </div>
+
+        <!-- 第二节：市场整体分析（周维度） -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">二</span>
+            <i class="fa-solid fa-chart-line"></i>
+            市场整体分析（周维度）
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label>本周指数走势总结</label>
+              <select class="form-input" id="wkTrend">
+                <option value="">请选择趋势...</option>
+                <option value="周线上涨">📈 周线上涨</option>
+                <option value="周线下跌">📉 周线下跌</option>
+                <option value="周线震荡整理">↔️ 周线震荡整理</option>
+                <option value="突破重要压力位">⬆️ 突破重要压力位</option>
+                <option value="跌破重要支撑位">⬇️ 跌破重要支撑位</option>
+              </select>
+              <textarea class="form-textarea short" id="wkTrendDetail" placeholder="描述本周指数整体表现，关键支撑压力位情况，大趋势判断..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>本周资金流向</label>
+              <div class="se-row two-col" style="margin-bottom:8px">
+                <div>
+                  <label class="sub-label">北向资金（周合计）</label>
+                  <input type="text" class="form-input" id="wkNorthFund" placeholder="如：周净流入 +120亿">
+                </div>
+                <div>
+                  <label class="sub-label">主力资金（周合计）</label>
+                  <input type="text" class="form-input" id="wkMainFund" placeholder="如：周净流出 -200亿">
+                </div>
+              </div>
+              <textarea class="form-textarea short" id="wkFundDetail" placeholder="周维度资金流向综合判断..."></textarea>
+            </div>
+          </div>
+          <div class="se-row three-col">
+            <div class="form-group">
+              <label>本周市场情绪整体</label>
+              <select class="form-input" id="wkSentimentLevel">
+                <option value="">请选择...</option>
+                <option value="持续高涨">🔥 持续高涨</option>
+                <option value="先热后冷">📊 先热后冷</option>
+                <option value="平淡偏弱">😐 平淡偏弱</option>
+                <option value="持续低迷">😔 持续低迷</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>周均成交量</label>
+              <input type="text" class="form-input" id="wkVolume" placeholder="如：日均 9000亿">
+            </div>
+            <div class="form-group">
+              <label>市场情绪综合评分</label>
+              <input type="text" class="form-input" id="wkSentimentScore" placeholder="如：6/10">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>市场情绪综合分析</label>
+            <textarea class="form-textarea short" id="wkSentimentDetail" placeholder="从周维度综合评价本周市场情绪变化，关键情绪拐点..."></textarea>
+          </div>
+        </div>
+
+        <!-- 第三节：板块深度剖析（周维度） -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">三</span>
+            <i class="fa-solid fa-layer-group"></i>
+            板块深度剖析（周维度）
+          </div>
+          <div class="form-group">
+            <label>本周领涨板块（前三）</label>
+            <div id="wkTopSectors"></div>
+            <button class="btn-add-small" onclick="addWkTopSector()" id="addWkSectorBtn"><i class="fa-solid fa-plus"></i> 添加板块</button>
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label>板块联动性分析</label>
+              <textarea class="form-textarea" id="wkLinkage" placeholder="本周热门板块内个股普涨还是龙头分化？热度是否可持续？"></textarea>
+            </div>
+            <div class="form-group">
+              <label>板块轮动规律</label>
+              <textarea class="form-textarea" id="wkRotation" placeholder="本周板块轮动路径，下周可能的轮动方向..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第四节：关注个股周度回顾 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">四</span>
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            关注个股周度回顾
+          </div>
+          <div id="wkStockReviews"></div>
+          <button class="btn-add-small" onclick="addWkStockReview()"><i class="fa-solid fa-plus"></i> 添加个股分析</button>
+        </div>
+
+        <!-- 第五节：下周操作计划 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">五</span>
+            <i class="fa-solid fa-calendar-day"></i>
+            下周操作计划
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label>目标板块与个股</label>
+              <textarea class="form-textarea" id="wkTargetSectors" placeholder="下周重点关注的板块和个股..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>风险防范</label>
+              <textarea class="form-textarea" id="wkRiskWarning" placeholder="下周可能的风险点：宏观政策、技术压力、情绪变化..."></textarea>
+            </div>
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label>买入计划</label>
+              <textarea class="form-textarea" id="wkBuyPlan" placeholder="买入价格区间、仓位计划、止损位..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>卖出计划</label>
+              <textarea class="form-textarea" id="wkSellPlan" placeholder="持仓卖出条件、止盈计划..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第六节：下周精选5只股票 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">六</span>
+            <i class="fa-solid fa-rocket"></i>
+            下周精选股票（最多5只）
+          </div>
+          <p class="hint"><i class="fa-solid fa-circle-info"></i> 从周度分析中筛选出最具潜力的 5 只股票</p>
+          <div id="wkRecommendInputs"></div>
+          <button class="btn-add-stock" id="addWkStockBtn" onclick="addWkStockInput()">
+            <i class="fa-solid fa-plus"></i> 添加股票
+          </button>
+        </div>
+
+      </div><!-- /structured-editor -->
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('weeklyModal')">取消</button>
+        <button class="btn-save" onclick="saveWeekly()"><i class="fa-solid fa-floppy-disk"></i> 保存周报</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       早盘报道 - 结构化五大板块编辑器
+       ============================================================ -->
+  <div class="modal-overlay" id="morningModal">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-sun"></i> 早盘报道 — 结构化早报</h3>
+        <button class="modal-close" onclick="closeModal('morningModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body structured-editor">
+
+        <!-- 标题 & 情绪 -->
+        <div class="se-row two-col">
+          <div class="form-group">
+            <label>今日标题</label>
+            <input type="text" id="mrTitle" class="form-input" placeholder="如：外盘走强，关注科技板块机会">
+          </div>
+          <div class="form-group">
+            <label>今日市场情绪预判</label>
+            <div class="sentiment-selector">
+              <button class="sentiment-btn" data-value="bullish" onclick="setMrSentiment('bullish')"><i class="fa-solid fa-arrow-trend-up"></i> 看多</button>
+              <button class="sentiment-btn active" data-value="neutral" onclick="setMrSentiment('neutral')"><i class="fa-solid fa-minus"></i> 中性</button>
+              <button class="sentiment-btn" data-value="bearish" onclick="setMrSentiment('bearish')"><i class="fa-solid fa-arrow-trend-down"></i> 看空</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第一节：外围市场 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">一</span>
+            <i class="fa-solid fa-globe"></i>
+            外围市场 — 昨夜今晨全球动向
+          </div>
+          <p class="hint"><i class="fa-solid fa-circle-info"></i> 记录影响今日 A 股的主要外盘信息</p>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label><i class="fa-brands fa-usps"></i> 美股表现</label>
+              <div class="se-overseas-grid" id="mrOverseasGrid">
+                <!-- 动态生成：道琼斯/纳斯达克/标普500 -->
+              </div>
+              <button class="btn-add-small" onclick="addOverseasRow()"><i class="fa-solid fa-plus"></i> 添加指数</button>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-yen-sign"></i> 港股 / 期货 / 商品</label>
+              <div class="se-overseas-grid" id="mrOtherGrid">
+                <!-- 动态生成：恒生/期货/黄金/原油 -->
+              </div>
+              <button class="btn-add-small" onclick="addOtherRow()"><i class="fa-solid fa-plus"></i> 添加品种</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:8px">
+            <label>外盘综合影响判断</label>
+            <textarea class="form-textarea short" id="mrOverseasSummary" placeholder="综合外盘表现，判断对今日 A 股开盘的影响：偏正面/偏负面/中性，以及哪些板块可能受到联动..."></textarea>
+          </div>
+        </div>
+
+        <!-- 第二节：昨日财经大事 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">二</span>
+            <i class="fa-solid fa-newspaper"></i>
+            昨日财经大事 — 影响今日的重要信息
+          </div>
+          <div class="mr-events-list" id="mrEventsList">
+            <!-- 动态生成 -->
+          </div>
+          <button class="btn-add-small" onclick="addEventItem()"><i class="fa-solid fa-plus"></i> 添加大事</button>
+          <div class="form-group" style="margin-top:12px">
+            <label>财经大事综合影响分析</label>
+            <textarea class="form-textarea short" id="mrEventsSummary" placeholder="综合昨日重要财经事件，分析对今日各板块的潜在影响..."></textarea>
+          </div>
+        </div>
+
+        <!-- 第三节：今日关注方向 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">三</span>
+            <i class="fa-solid fa-crosshairs"></i>
+            今日关注方向 — 重点板块方向
+          </div>
+          <div class="se-row two-col">
+            <!-- 关注板块 -->
+            <div>
+              <div class="se-focus-header focus-watch">
+                <i class="fa-solid fa-star"></i> 重点关注板块
+                <span class="tag-mini tag-green">机会</span>
+              </div>
+              <div id="mrWatchSectors">
+                <!-- 动态生成 -->
+              </div>
+              <button class="btn-add-small" onclick="addWatchSector()"><i class="fa-solid fa-plus"></i> 添加关注板块</button>
+            </div>
+            <!-- 注意板块 -->
+            <div>
+              <div class="se-focus-header focus-warn">
+                <i class="fa-solid fa-triangle-exclamation"></i> 需要注意板块
+                <span class="tag-mini tag-red">风险</span>
+              </div>
+              <div id="mrWarnSectors">
+                <!-- 动态生成 -->
+              </div>
+              <button class="btn-add-small" onclick="addWarnSector()"><i class="fa-solid fa-plus"></i> 添加注意板块</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>板块方向综合判断</label>
+            <textarea class="form-textarea short" id="mrFocusSummary" placeholder="综合今日关注方向，判断今日市场主线，哪些板块最值得重点跟踪..."></textarea>
+          </div>
+        </div>
+
+        <!-- 第四节：操作建议 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">四</span>
+            <i class="fa-solid fa-lightbulb"></i>
+            操作建议 — 今日交易策略
+          </div>
+          <div class="se-row two-col">
+            <div class="form-group">
+              <label><i class="fa-solid fa-arrow-up-right-dots"></i> 买入建议</label>
+              <select class="form-input" id="mrBuyStrength" style="margin-bottom:8px">
+                <option value="">进攻强度...</option>
+                <option value="积极进攻">🔥 积极进攻（放开仓位）</option>
+                <option value="适度参与">✅ 适度参与（控制仓位）</option>
+                <option value="谨慎观望">👀 谨慎观望（等待信号）</option>
+                <option value="暂时空仓">🚫 暂时空仓（规避风险）</option>
+              </select>
+              <textarea class="form-textarea" id="mrBuyAdvice" placeholder="具体买入建议：目标板块、买入时机、买入价格参考、仓位建议..."></textarea>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-arrow-down-right-dots"></i> 卖出 / 减仓建议</label>
+              <select class="form-input" id="mrSellStrength" style="margin-bottom:8px">
+                <option value="">减仓力度...</option>
+                <option value="正常持有">✅ 正常持有（不减仓）</option>
+                <option value="适当减仓">📉 适当减仓（减1-3成）</option>
+                <option value="大幅减仓">⚠️ 大幅减仓（减5成以上）</option>
+                <option value="清仓离场">🚨 清仓离场</option>
+              </select>
+              <textarea class="form-textarea" id="mrSellAdvice" placeholder="具体减仓建议：需要卖出的标的、触发条件、止损位..."></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-shield-halved"></i> 今日主要风险提示</label>
+            <textarea class="form-textarea short" id="mrRiskNote" placeholder="今日需要特别警惕的风险：技术压力位、政策消息面风险、外盘波动风险..."></textarea>
+          </div>
+        </div>
+
+        <!-- 第五节：今日计划 -->
+        <div class="se-section">
+          <div class="se-section-title">
+            <span class="se-num">五</span>
+            <i class="fa-solid fa-list-check"></i>
+            今日计划 — 具体操作清单
+          </div>
+          <div class="mr-plan-list" id="mrPlanList">
+            <!-- 动态生成 -->
+          </div>
+          <button class="btn-add-small" onclick="addPlanItem()"><i class="fa-solid fa-plus"></i> 添加计划</button>
+          <div class="form-group" style="margin-top:12px">
+            <label>开盘前最后检查</label>
+            <textarea class="form-textarea short" id="mrPreOpenCheck" placeholder="开盘前需要确认的事项：账户资金情况、昨日委托是否成交、今日关键时间节点..."></textarea>
+          </div>
+        </div>
+
+      </div><!-- /structured-editor -->
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('morningModal')">取消</button>
+        <button class="btn-save" onclick="saveMorning()"><i class="fa-solid fa-floppy-disk"></i> 保存早报</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       推荐股票编辑弹窗（保留旧版，从周报中独立使用时备用）
+       ============================================================ -->
+  <div class="modal-overlay" id="recommendModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>编辑下周推荐股票</h3>
+        <button class="modal-close" onclick="closeModal('recommendModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> 最多选择 5 只股票，支持 A 股、港股、美股</p>
+        <div id="recommendStockInputs"></div>
+        <button class="btn-add-stock" id="addStockBtn" onclick="addStockInput()">
+          <i class="fa-solid fa-plus"></i> 添加股票
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('recommendModal')">取消</button>
+        <button class="btn-save" onclick="saveRecommendStocks()">保存推荐</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       股票搜索下拉（通用，附着在输入框旁，JS 动态挂载）
+       ============================================================ -->
+  <div id="stockSearchDropdown" class="stock-search-dropdown hidden">
+    <div id="stockSearchList"></div>
+  </div>
+
+  <!-- ============================================================
+       手动添加关注股票弹窗
+       ============================================================ -->
+  <div class="modal-overlay" id="addWatchStockModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-star"></i> 添加关注股票</h3>
+        <button class="modal-close" onclick="closeModal('addWatchStockModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> 输入股票代码或名称，系统自动匹配</p>
+        <div class="form-group stock-search-wrap">
+          <label>股票代码 / 名称</label>
+          <input type="text" id="watchStockInput" class="form-input" placeholder="如：600519 或 贵州茅台"
+                 autocomplete="off" oninput="onStockSearch(this,'watchStockResult','watchCode','watchName','watchMarket')">
+          <div id="watchStockResult" class="stock-search-dropdown hidden"><div id="watchStockList"></div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>代码</label>
+            <input type="text" id="watchCode" class="form-input" placeholder="自动填入">
+          </div>
+          <div class="form-group">
+            <label>名称</label>
+            <input type="text" id="watchName" class="form-input" placeholder="自动填入">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>市场</label>
+          <select id="watchMarket" class="form-input">
+            <option value="A">A 股</option>
+            <option value="HK">港股</option>
+            <option value="US">美股</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>推荐理由</label>
+          <input type="text" id="watchReason" class="form-input" placeholder="简要填写关注理由...">
+        </div>
+        <div class="form-group">
+          <label>操作建议</label>
+          <input type="text" id="watchAdvice" class="form-input" placeholder="如：关注回调至10元附近可分批建仓...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('addWatchStockModal')">取消</button>
+        <button class="btn-save" onclick="saveWatchStock()"><i class="fa-solid fa-star"></i> 添加关注</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       持仓编辑弹窗
+       ============================================================ -->
+  <div class="modal-overlay" id="holdingModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="holdingModalTitle">添加持仓</h3>
+        <button class="modal-close" onclick="closeModal('holdingModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group stock-search-wrap">
+            <label>股票代码</label>
+            <input type="text" id="holdingCode" class="form-input" placeholder="如：600519" autocomplete="off"
+                   oninput="onStockSearch(this,'holdingSearchResult','holdingCode','holdingName','holdingMarket')">
+            <div id="holdingSearchResult" class="stock-search-dropdown hidden"><div id="holdingSearchList"></div></div>
+          </div>
+          <div class="form-group">
+            <label>股票名称</label>
+            <input type="text" id="holdingName" class="form-input" placeholder="如：贵州茅台" autocomplete="off"
+                   oninput="onStockSearch(this,'holdingNameResult','holdingCode','holdingName','holdingMarket')">
+            <div id="holdingNameResult" class="stock-search-dropdown hidden"><div id="holdingNameList"></div></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>持仓成本（元）</label>
+            <input type="number" id="holdingCost" class="form-input" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>持仓数量（股）</label>
+            <input type="number" id="holdingShares" class="form-input" placeholder="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>当前价格（元）</label>
+            <input type="number" id="holdingCurrentPrice" class="form-input" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>市场</label>
+            <select id="holdingMarket" class="form-input">
+              <option value="A">A 股</option>
+              <option value="HK">港股</option>
+              <option value="US">美股</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>备注</label>
+          <input type="text" id="holdingNote" class="form-input" placeholder="买入原因、目标价位等...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('holdingModal')">取消</button>
+        <button class="btn-save" onclick="saveHolding()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/stock/app.js"></script>
+</body>
+</html>

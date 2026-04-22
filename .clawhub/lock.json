@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "skills": {
+    "openclaw-tavily-search": {
+      "version": "0.1.0",
+      "installedAt": 1774109334571
+    },
+    "summarize": {
+      "version": "1.0.0",
+      "installedAt": 1774109335951
+    },
+    "agent-browser": {
+      "version": "0.2.0",
+      "installedAt": 1774109337362
+    },
+    "github": {
+      "version": "1.0.0",
+      "installedAt": 1774109338802
+    },
+    "obsidian": {
+      "version": "1.0.0",
+      "installedAt": 1774109340566
+    },
+    "weather": {
+      "version": "1.0.0",
+      "installedAt": 1774109342048
+    },
+    "tencentcloud-lighthouse-skill": {
+      "version": "1.0.0",
+      "installedAt": 1774109344093
+    },
+    "tencent-docs": {
+      "version": "1.0.18",
+      "installedAt": 1774109347404
+    },
+    "tencent-cos-skill": {
+      "version": "1.0.6",
+      "installedAt": 1774109349848
+    },
+    "find-skills-skill": {
+      "version": "1.0.0",
+      "installedAt": 1774335264114
+    },
+    "openai-whisper": {
+      "version": "1.0.0",
+      "installedAt": 1774335270202
+    },
+    "self-improving-agent": {
+      "version": "1.0.11",
+      "installedAt": 1774337859538
+    },
+    "test-runner": {
+      "version": "1.0.0",
+      "installedAt": 1774409221862
+    },
+    "gitai-skill": {
+      "version": "1.0.2",
+      "installedAt": 1774410242328
+    },
+    "test-generator": {
+      "version": "2.0.1",
+      "installedAt": 1774410842739
+    },
+    "web-tools-guide": {
+      "version": "1.0.2",
+      "installedAt": 1776396269544
+    },
+    "wechat-mp-cn": {
+      "version": "1.0.0",
+      "installedAt": 1776510781846
+    }
+  }
+}

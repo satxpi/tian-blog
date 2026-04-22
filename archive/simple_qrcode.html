@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>微信公众号登录二维码</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: inline-block;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .instructions {
+            text-align: left;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #07c160;
+        }
+        .step {
+            margin: 10px 0;
+        }
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #eee;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+        }
+        .manual-link {
+            margin-top: 20px;
+            padding: 10px;
+            background: #07c160;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .manual-link:hover {
+            background: #06ad56;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦐 微信公众号登录</h1>
+        
+        <div class="instructions">
+            <div class="step"><strong>步骤1：</strong> 在电脑浏览器中打开：</div>
+            <div style="background: #f0f0f0; padding: 10px; border-radius: 3px; margin: 10px 0; font-family: monospace;">
+                https://mp.weixin.qq.com
+            </div>
+            
+            <div class="step"><strong>步骤2：</strong> 您会看到登录页面和二维码</div>
+            
+            <div class="step"><strong>步骤3：</strong> 用手机微信扫描二维码</div>
+            
+            <div class="step"><strong>步骤4：</strong> 在手机上选择公众号并确认登录</div>
+        </div>
+        
+        <div class="qr-placeholder">
+            <div style="text-align: center; color: #666;">
+                <div style="font-size: 48px;">📱</div>
+                <div>请访问上方网址获取二维码</div>
+            </div>
+        </div>
+        
+        <p>如果无法自动获取二维码，请手动访问：</p>
+        <a href="https://mp.weixin.qq.com" class="manual-link" target="_blank">
+            点击访问微信公众号平台
+        </a>
+        
+        <div style="margin-top: 30px; font-size: 14px; color: #666;">
+            <p><strong>登录后请告诉我，我会：</strong></p>
+            <ul style="text-align: left;">
+                <li>检查API权限和配置</li>
+                <li>分析公众号运营现状</li>
+                <li>开始准备内容发布</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
