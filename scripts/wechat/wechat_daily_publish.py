@@ -1,150 +1,47 @@
 #!/usr/bin/env python3
 """
 微信公众号每日自动发布脚本
-用通义千问AI实时生成文章，多样写作风格，每篇都不一样
+读取预生成的文章markdown文件，提交到草稿箱
 
-用法: python3 wechat_daily_publish.py
-定时任务: 0 8 * * * python3 /root/.openclaw/workspace/scripts/wechat/wechat_daily_publish.py >> /tmp/wechat_daily.log 2>&1
+文章文件路径: /root/.openclaw/workspace/articles/daily/YYYY-MM-DD.md
+由AI提前一天生成好，脚本只负责发布
 """
 
 import requests
 import json
 import datetime
+import time
 import os
 import sys
 import fcntl
 import re
+import subprocess
 
 # 配置
 APPID = "wx4d76a79c84e3ebbc"
 SECRET = "72d4248a0d0384384884116ff2470e06"
 LOG_FILE = "/tmp/wechat_daily.log"
 LOCK_FILE = "/tmp/wechat_daily_publish.lock"
-ARCHIVE_DIR = "/root/.openclaw/workspace/articles/daily"
+ARTICLE_DIR = "/root/.openclaw/workspace/articles/daily"
 
-# 通义千问API
-QWEN_BASE = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-QWEN_KEY = "sk-ad7b90eb92ee4a21a9bd02e368b6d9e2"
-QWEN_MODEL = "qwen3.5-plus"
+# 轮换主题池 - 每天不同类型，保持多样性
+# 周一: 实用技巧
+# 周二: 健康养生
+# 周三: 热点解读
+# 周四: 生活故事/悬疑
+# 周五: 工具测评
+# 周六: 轻松趣味
+# 周日: 深度思考
 
-# 每日主题池
-TOPIC_POOLS = {
-    0: ["周一综合症：为什么每个周一都不想起床", "重启：电脑重启能解决90%问题人却不行", "周一的咖啡和周五的咖啡有什么不同", "每一个周一都是一次假装重新开始"],
-    1: ["外卖小哥的时速我们是不是都被困在倒计时里", "凌晨两点的便利店谁还在", "便利店的关东煮比米其林治愈", "电梯里的沉默一栋楼的人谁也不认识谁"],
-    2: ["一周过半你还在坚持上周的决定吗", "收藏100篇文章读了0篇这是什么病", "日历写满待办但没一件是自己想做的", "周三了周末计划是不是又泡汤了"],
-    3: ["朋友圈里过得最好的人私下是什么样", "多久没跟一个老朋友聊过天了", "已读不回现代社交最体面的冷暴力", "群聊里的沉默比吵架更难受"],
-    4: ["周五下午三点的空气为什么闻起来不一样", "终于周五了这句话说了多少年", "周五晚上的酒喝的不是酒是自由", "周末计划从充满期待到睡到中午"],
-    5: ["断网24小时会发生什么", "一个人待着的时候你都在干什么", "厨房里一个人的晚餐", "周末醒得比工作日还早这是什么体质"],
-    6: ["周日晚上睡不着的人在怕什么", "发呆算不算一种能力", "给下周写一封信你会说什么", "周日黄昏一周里最诚实的时刻"],
+TOPIC_TYPES = {
+    0: "实用技巧",  # 周一：手机功能、科技工具、隐藏设置等
+    1: "健康养生",  # 周二：颈椎腰椎、居家锻炼、睡眠改善等
+    2: "热点解读",  # 周三：当天热点、财经新闻、社会现象解读
+    3: "生活故事",  # 周四：真实故事、悬疑案件、人物经历等
+    4: "工具测评",  # 周五：APP测评、产品对比、使用体验等
+    5: "轻松趣味",  # 周六：搞笑段子、冷知识、趣味发现等
+    6: "深度思考",  # 周日：观点文章、人生感悟、社会观察等
 }
-
-# 核心系统prompt（所有风格共用）
-SYSTEM_PROMPT = """你是一个写生活随笔的作家。你的文章必须有内核——读完能让读者沉默三秒，或者会心一笑。
-
-铁律（违反任何一条就是失败）：
-1. 标题承诺必须兑现——标题说"断网24小时"，正文就必须围绕断网展开，不能跑题写一堆不相关的场景
-2. 必须有叙事线——文章要有推进感，不能是零散画面的随机堆砌。可以是：一个事件的发展、一种情绪的变化、一个发现的过程、一个悬念的揭晓
-3. 细节必须为主题服务——每个场景、每句描写都要跟主题有关系。不相关的精彩画面也删掉
-4. 绝对禁止说教——不要给建议、不要总结、不要"让我们一起"
-5. 绝对禁止升华——不要在结尾给人生哲理、不要反问句结尾
-6. 绝对禁止空洞——不要"在这个时代"、不要"也许"、"或许"堆砌
-7. 结尾要有余韵——不是突然断掉，也不是总结陈词。像电影最后一个镜头，画面停了但意思还在
-8. 情绪通过细节传递，不直说——不要写"我觉得""我想""这让我意识到"
-9. 具体比抽象好——"7-11的关东煮"比"便利店的食物"好
-10. 文章要有一个核心感受——读完之后读者心里留下一种情绪，而不是"看了很多画面但不知道想说什么"""
-
-# 写作风格池
-STYLE_POOLS = [
-    {
-        "name": "冷吐槽",
-        "prompt": """风格：毒舌脱口秀，短句吐槽，一句接一句。具体到人名地名。只吐槽不给答案。但吐槽必须围绕主题，不能东一句西一句。
-
-结构：从主题出发，吐槽层层递进（表面现象→荒谬之处→冷不丁一句扎心的），不是随机罗列。
-
-参考：
-「闹钟设了六个，6:00到6:25每五分钟一个。全响了，全关了。最后一个响的时候想请假。真的请了。理由：身体不适。翻译：床太舒服。」
-
-写600字。""",
-    },
-    {
-        "name": "白描",
-        "prompt": """风格：抓住有意味的瞬间，跳过没有的。短句，白描，不要形容词堆砌。
-
-⚠️ 白描≠画面堆砌！
-烂白描：便利店烤肠、地铁口招牌、客厅挂钟——三个画面零关联，读完不知道想说什么
-好白描：一个人在便利店等微波炉便当加热，1分30秒，看着转盘转了三圈——这是孤独
-
-必须有叙事推进：场景之间要有关系，要么是时间的推进，要么是情绪的递进，要么是因果。不能是随机抓拍拼一起。
-写600字。""",
-    },
-    {
-        "name": "碎碎念",
-        "prompt": """风格：深夜自言自语。一句一段，短的几个字，长的不超20字。跳跃，不照顾逻辑，不解释。
-
-但碎碎念不是胡言乱语——表面散，底下有一条情绪线牵着。所有碎片都指向同一个感受，只是角度不同。
-
-参考：
-「咖啡。凉了。微波炉30秒。又凉了。算了。」「窗外有猫叫。不知道谁家的。」
-
-写600字。""",
-    },
-    {
-        "name": "内心戏",
-        "prompt": """风格：对"你"说话。过去的自己、走了的人、一切想说的对象。私密、口语、可以跑题。
-
-但必须围绕主题展开——"你"和主题有什么关系？为什么是现在想起"你"？这个要清楚。
-
-参考：
-「你还记得那时候说好的吗。我忘了。」「你走之后我买了好多东西。都不用。」
-
-写600字。""",
-    },
-    {
-        "name": "清单体",
-        "prompt": """风格：脑子里的清单，不是待办。序号开头，每项不超30字。不分类，想起什么写什么。
-
-清单要有推进感——从1到N不是随机的，读下来能感觉到某种情绪或想法在变化。可能是越写越认真，也可能是越写越跑偏但跑偏本身就很有意思。
-
-参考：
-「1. 今天忘了吃早餐 2. 昨天也没吃 3. 好像最近都没吃 4. 该买面包 5. 上次买的发霉了」
-
-写600字。""",
-    },
-    {
-        "name": "微型小说",
-        "prompt": """风格：生活切片。有人物场景动作。不写"她想"，写她做了什么。细节具体。
-
-必须有故事弧线——起因、经过、结果（或没有结果的悬停）。不是只写一个静态场景。
-
-参考：
-「他拿了两罐啤酒。左一罐右一罐。放回去。又拿。又放。最后都没买。」
-
-写600字。""",
-    },
-    {
-        "name": "城市漫游",
-        "prompt": """风格：城市里抓拍。便利店、地铁口、街角、招牌、雨后的地面。不写"我看到"，直接写画面。
-
-⚠️ 城市漫游≠随机街拍合集！
-烂城市漫游：写6个不相关的城市画面拼一起，没有主题
-好城市漫游：所有画面都围绕主题，画面之间有呼应或对比，读完有整体感受
-
-必须是主题驱动的城市观察——标题说什么，你的镜头就找什么。
-写600字。""",
-    },
-    {
-        "name": "假装开头",
-        "prompt": """风格：每段像文章开头，但都不继续。一段一两句话就换。不同角度但有内在情绪线。
-
-所有开头都围绕同一个主题，像从不同门走进同一个房间。不是从10个不同房间各看一眼。
-
-参考：
-「有一次我在凌晨三点的街上走...」「说到跑步，我从没坚持过超过三天...」「其实昨天本来想说一件事...」
-
-写600字。""",
-    },
-]
-
 
 def log(msg):
     ts = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -152,7 +49,6 @@ def log(msg):
     print(line)
     with open(LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(line + '\n')
-
 
 def acquire_lock():
     try:
@@ -163,7 +59,6 @@ def acquire_lock():
         log("⚠️ 另一个实例正在运行，跳过")
         sys.exit(0)
 
-
 def get_token():
     url = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={APPID}&secret={SECRET}"
     r = requests.get(url, timeout=10).json()
@@ -171,7 +66,6 @@ def get_token():
         return r['access_token']
     log(f"❌ token失败: {r}")
     return None
-
 
 def upload_cover(token, image_path):
     if not os.path.exists(image_path):
@@ -182,7 +76,6 @@ def upload_cover(token, image_path):
     if 'media_id' in r:
         return r['media_id']
     return None
-
 
 def generate_cover(prompt):
     ts = int(datetime.datetime.now().timestamp())
@@ -199,7 +92,6 @@ def generate_cover(prompt):
     except:
         pass
     return None
-
 
 def create_draft(token, title, content, thumb_media_id, digest=""):
     url = f"https://api.weixin.qq.com/cgi-bin/draft/add?access_token={token}"
@@ -222,131 +114,236 @@ def create_draft(token, title, content, thumb_media_id, digest=""):
     log(f"❌ 草稿创建失败: {r}")
     return None
 
+def parse_markdown(filepath):
+    """解析markdown文件，提取标题和内容"""
+    with open(filepath, 'r', encoding='utf-8') as f:
+        text = f.read()
+    
+    lines = text.strip().split('\n')
+    title = ""
+    content_lines = []
+    
+    for line in lines:
+        if line.startswith('# ') and not title:
+            title = line[2:].strip()
+            continue
+        content_lines.append(line)
+    
+    content = '\n'.join(content_lines).strip()
+    html = markdown_to_html(content)
+    
+    return title, html
 
-def generate_article_with_ai(topic, style):
-    """调用通义千问生成文章"""
-    prompt = f"""主题：{topic}
-
-{style['prompt']}
-
-输出HTML格式：用<p>分段，<strong>加粗关键短语（少用）。不要写标题，只输出正文。"""
-
-    try:
-        r = requests.post(
-            f"{QWEN_BASE}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {QWEN_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": QWEN_MODEL,
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": 0.92,
-                "top_p": 0.88,
-                "max_tokens": 2000,
-                "extra_body": {"enable_thinking": False}
-            },
-            timeout=120
-        )
-
-        if r.status_code == 200:
-            result = r.json()
-            content = result['choices'][0]['message']['content'].strip()
-            if content and len(content) > 300:
-                log(f"✅ 生成成功 风格={style['name']} 字数={len(content)}")
-                content = re.sub(r'^```html\s*', '', content)
-                content = re.sub(r'\s*```$', '', content)
-                image_prompt = f"{topic}, daily life, natural lighting, warm atmosphere"
-                return topic, content, image_prompt
+def markdown_to_html(text):
+    """简单markdown转HTML"""
+    lines = text.split('\n')
+    html_lines = []
+    in_code = False
+    in_list = False
+    
+    for line in lines:
+        if line.startswith('```'):
+            if in_code:
+                html_lines.append('</code></pre>')
+                in_code = False
             else:
-                log(f"⚠️ 内容过短: {len(content)}字")
+                html_lines.append('<pre><code>')
+                in_code = True
+            continue
+        
+        if in_code:
+            html_lines.append(line)
+            continue
+        
+        if not line.strip():
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append('')
+            continue
+        
+        if line.startswith('### '):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append(f'<h3>{line[4:].strip()}</h3>')
+            continue
+        if line.startswith('## '):
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            html_lines.append(f'<h2>{line[3:].strip()}</h2>')
+            continue
+        
+        if line.startswith('- ') or line.startswith('* '):
+            if not in_list:
+                html_lines.append('<ul>')
+                in_list = True
+            html_lines.append(f'<li>{line[2:].strip()}</li>')
+            continue
+        
+        if in_list:
+            html_lines.append('</ul>')
+            in_list = False
+        
+        line = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', line)
+        line = re.sub(r'__(.+?)__', r'<strong>\1</strong>', line)
+        line = re.sub(r'\*(.+?)\*', r'<em>\1</em>', line)
+        line = re.sub(r'_(.+?)_', r'<em>\1</em>', line)
+        
+        html_lines.append(f'<p>{line}</p>')
+    
+    if in_list:
+        html_lines.append('</ul>')
+    if in_code:
+        html_lines.append('</code></pre>')
+    
+    return '\n'.join(html_lines)
+
+def generate_article_auto(today, topic_type, article_file):
+    """使用openclaw agent自动生成日常文章"""
+    day_prompts = {
+        0: "实用技巧类（手机功能、科技工具、隐藏设置等冷门实用内容）",
+        1: "健康养生类（颈椎腰椎、居家锻炼、睡眠改善等实用建议）",
+        2: "热点解读类（近期社会热点、财经新闻、现象解读）",
+        3: "生活故事/悬疑类（真实故事、悬疑案件、人物经历等）",
+        4: "工具测评类（APP测评、产品对比、使用体验等）",
+        5: "轻松趣味类（冷知识、趣味发现、搞笑段子等）",
+        6: "深度思考类（人生感悟、社会观察、观点文章等）",
+    }
+    prompt = day_prompts.get(datetime.datetime.now().weekday(), "生活类")
+    
+    message = (
+        f"请撰写一篇{today}的公众号日常文章，类型：{prompt}，保存到 {article_file}。\n\n"
+        f"【核心原则：写得像真人写的博客文章，不像AI模板】\n\n"
+        f"【必须避免的AI味】：\n"
+        f"- 禁止'现象→分析→总结→升华'的固定套路\n"
+        f"- 禁止每段末尾都来一句金句/总结句\n"
+        f"- 禁止高频使用'但''然而''不是X，是Y'\n"
+        f"- 禁止'我不是X，但…'的自谦式结尾\n"
+        f"- 禁止每个观点都配一个完美案例\n"
+        f"- 禁止情绪一路平稳，要有快慢松紧\n\n"
+        f"【写作风格要求】：\n"
+        f"- 从一个具体的场景、故事或对话切入，不要从大道理开始\n"
+        f"- 段落长短参差：有的一句话成段，有的连续几段紧凑推进\n"
+        f"- 用口语写，不用书面语（'然而'→'不过'，'因此'→'所以'）\n"
+        f"- 细节要具体可感：不说'他很焦虑'，说'他盯着手机不停刷新屏幕'\n"
+        f"- 可以突然跳转话题，可以停顿，可以话说到一半不说了——真人就这样\n"
+        f"- 结尾不要总结升华，留白就好。让读者自己想\n"
+        f"- 偶尔可以不完整、不工整，这反而真实\n\n"
+        f"【格式】：\n"
+        f"- 标题要有吸引力\n"
+        f"- 结尾加「本文由AI生成，经人工审核修改」\n"
+        f"- 不预告下一篇\n"
+        f"- 直接写入文件，不需要确认"
+    )
+    
+    cmd = [
+        "openclaw", "agent",
+        "--agent", "main",
+        "--message", message,
+        "--timeout", "300",
+    ]
+    
+    log(f"🤖 文章不存在，开始自动生成... (类型: {topic_type})")
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=320)
+        if result.returncode == 0 and os.path.exists(article_file):
+            log(f"✅ 文章自动生成完成: {article_file} ({os.path.getsize(article_file)} bytes)")
+            return True
         else:
-            log(f"❌ API失败: {r.status_code}")
+            log(f"❌ 生成失败 (exit={result.returncode}): {result.stderr[:300]}")
+            return False
+    except subprocess.TimeoutExpired:
+        log(f"❌ 生成超时（320秒）")
+        return False
     except Exception as e:
-        log(f"❌ 异常: {e}")
-
-    return None
-
-
-def save_archive(title, content):
-    os.makedirs(ARCHIVE_DIR, exist_ok=True)
-    date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-    safe_title = re.sub(r'[\\/:*?"<>|]', '', title[:20])
-    filepath = os.path.join(ARCHIVE_DIR, f"{date_str}_{safe_title}.md")
-    text = re.sub(r'<[^>]+>', '', content)
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(f"# {title}\n\n日期: {date_str}\n\n{text}")
-    log(f"📝 归档: {filepath}")
+        log(f"❌ 生成异常: {e}")
+        return False
 
 
 def main():
-    log("=== 开始每日发布 ===")
     lock_fd = acquire_lock()
-
+    log("=== 开始每日发布 ===")
+    
+    # 检查今天的文章文件
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    weekday = datetime.datetime.now().weekday()  # 0=周一
+    topic_type = TOPIC_TYPES.get(weekday, "生活")
+    
+    log(f"今日类型: {topic_type}")
+    
+    article_file = os.path.join(ARTICLE_DIR, f"{today}.md")
+    
+    # 文件不存在时自动生成
+    if not os.path.exists(article_file):
+        generated = generate_article_auto(today, topic_type, article_file)
+        if not generated:
+            log(f"❌ 文章自动生成失败")
+            sys.exit(1)
+    
+    # 获取token
     token = get_token()
     if not token:
         sys.exit(1)
-
-    weekday = datetime.datetime.now().weekday()
-    topics = TOPIC_POOLS.get(weekday, TOPIC_POOLS[0])
-    day_seed = int(datetime.datetime.now().strftime('%Y%m%d'))
-
-    import random
-    random.seed(day_seed)
-    topic = random.choice(topics)
-    style = random.choice(STYLE_POOLS)
-
-    log(f"主题: {topic}")
-    log(f"风格: {style['name']}")
-
-    # 生成文章（最多重试3次）
-    article = None
-    for attempt in range(3):
-        article = generate_article_with_ai(topic, style)
-        if article:
-            break
-        log(f"⚠️ 第{attempt+1}次失败")
-        style = random.choice(STYLE_POOLS)
-        log(f"换风格: {style['name']}")
-
-    if not article:
-        log("❌ 生成失败")
+    
+    # 解析文章
+    title, content = parse_markdown(article_file)
+    if not title or not content:
+        log(f"❌ 文章解析失败")
         sys.exit(1)
-
-    title, content, image_prompt = article
-
-    # 8点文章只加AI标识
-    date_str = datetime.datetime.now().strftime('%Y年%m月%d日')
-    content += f"\n<p>【本文由AI生成，经人工审核修改】<br/>{date_str}</p>"
-
-    # 封面
-    cover_path = generate_cover(image_prompt)
-    if not cover_path:
-        log("❌ 封面失败")
-        sys.exit(1)
-
-    thumb_media_id = upload_cover(token, cover_path)
+    
+    log(f"文章: {title}")
+    
+    # 生成封面
+    cover_prompt = f"{title[:30]}, modern lifestyle, warm atmosphere"
+    cover_path = generate_cover(cover_prompt)
+    
+    thumb_media_id = None
+    if cover_path:
+        thumb_media_id = upload_cover(token, cover_path)
+        if thumb_media_id:
+            log(f"✅ 封面上传成功")
+    
     if not thumb_media_id:
-        log("❌ 上传失败")
+        log("⚠️ 封面生成/上传失败，使用备用封面")
+        # 尝试用一个简单的纯色封面
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+            img = Image.new('RGB', (1024, 768), '#2C3E50')
+            draw = ImageDraw.Draw(img)
+            # 画一些简单的装饰
+            for i in range(0, 1024, 80):
+                draw.line([(i, 0), (i, 768)], fill='#34495E', width=1)
+            for i in range(0, 768, 80):
+                draw.line([(0, i), (1024, i)], fill='#34495E', width=1)
+            path = f"/tmp/wechat_fallback_cover_{int(time.time())}.jpg"
+            img.save(path, 'JPEG', quality=90)
+            thumb_media_id = upload_cover(token, path)
+            if thumb_media_id:
+                log(f"✅ 备用封面上传成功")
+        except Exception as e:
+            log(f"⚠️ 备用封面也失败: {e}")
+
+    if not thumb_media_id:
+        log("❌ 所有封面方式都失败，退出")
         sys.exit(1)
-
-    # 草稿
-    plain_text = re.sub(r'<[^>]+>', '', content)
-    digest = plain_text[:60]
-    draft_id = create_draft(token, title, content, thumb_media_id, digest)
-
-    if draft_id:
-        log(f"✅ 草稿提交成功 media_id={draft_id}")
-        log(f"   标题: {title} | 风格: {style['name']}")
-        save_archive(title, content)
+    
+    # 添加AI标识
+    if "本文由AI生成" not in content:
+        content += '<p style="color:#999;font-size:12px;margin-top:30px;">本文由AI生成，经人工审核修改</p>'
+    
+    # 创建草稿
+    media_id = create_draft(token, title, content, thumb_media_id)
+    
+    if media_id:
+        log(f"✅ 草稿创建成功: {title}")
+        log(f"   media_id: {media_id}")
     else:
+        log(f"❌ 草稿创建失败")
         sys.exit(1)
-
-    log("=== 完成 ===")
-
+    
+    log("=== 发布结束 ===")
 
 if __name__ == "__main__":
     main()
