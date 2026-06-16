@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>缠论策略研究看板｜V22 / V23</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#11182c; --panel2:#0f172a; --card:#141f38;
+      --text:#e5eefc; --muted:#94a3b8; --line:#26344f; --accent:#38bdf8;
+      --good:#22c55e; --warn:#f59e0b; --bad:#ef4444; --purple:#a78bfa;
+      --shadow: 0 18px 50px rgba(0,0,0,.32);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;background:radial-gradient(circle at 20% 0%,#17335f 0,#0b1020 36%,#070b16 100%);color:var(--text);line-height:1.6}
+    a{color:#7dd3fc;text-decoration:none} a:hover{text-decoration:underline}
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 18px 60px}
+    .hero{padding:28px;border:1px solid rgba(125,211,252,.22);background:linear-gradient(135deg,rgba(56,189,248,.13),rgba(167,139,250,.08) 45%,rgba(20,31,56,.96));border-radius:24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .hero:after{content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:rgba(56,189,248,.13);filter:blur(2px)}
+    .eyebrow{color:#7dd3fc;font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    h1{font-size:34px;line-height:1.18;margin:10px 0 12px;position:relative;z-index:1}
+    .hero p{max-width:860px;color:#cbd5e1;margin:0;position:relative;z-index:1}
+    .badgebar{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;position:relative;z-index:1}
+    .badge{border:1px solid var(--line);background:rgba(15,23,42,.72);padding:7px 11px;border-radius:999px;font-size:13px;color:#cbd5e1}.badge.good{border-color:rgba(34,197,94,.5);color:#bbf7d0}.badge.warn{border-color:rgba(245,158,11,.55);color:#fde68a}.badge.bad{border-color:rgba(239,68,68,.55);color:#fecaca}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-7{grid-column:span 7}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+    .card{background:linear-gradient(180deg,rgba(20,31,56,.96),rgba(15,23,42,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+    h2{font-size:21px;margin:0 0 12px} h3{font-size:16px;margin:0 0 9px}.muted{color:var(--muted)}.big{font-size:28px;font-weight:900;letter-spacing:-.02em}.small{font-size:13px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}.ok{color:#86efac}.warntext{color:#fcd34d}.badtext{color:#fca5a5}.accent{color:#7dd3fc}.purple{color:#c4b5fd}
+    .metric{display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid rgba(148,163,184,.13);padding:10px 0}.metric:first-child{border-top:0}.metric span:first-child{color:var(--muted)}.metric b{font-size:18px}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px;font-size:13px} th,td{padding:10px 9px;border-bottom:1px solid rgba(148,163,184,.16);text-align:left;vertical-align:top} th{color:#bfdbfe;background:rgba(15,23,42,.85);font-weight:800} tr:hover td{background:rgba(56,189,248,.045)}
+    .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;border:1px solid var(--line);background:#0b1223}.pill.good{color:#bbf7d0;border-color:rgba(34,197,94,.45)}.pill.warn{color:#fde68a;border-color:rgba(245,158,11,.45)}.pill.bad{color:#fecaca;border-color:rgba(239,68,68,.45)}
+    .timeline{position:relative;padding-left:18px}.timeline:before{content:"";position:absolute;left:4px;top:5px;bottom:5px;width:2px;background:linear-gradient(var(--accent),transparent)}.tl{position:relative;margin:0 0 15px}.tl:before{content:"";position:absolute;left:-18px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.12)}.tl b{display:block}.tl p{margin:3px 0 0;color:#cbd5e1}
+    .chips{display:flex;gap:9px;flex-wrap:wrap}.chip{background:#0b1223;border:1px solid var(--line);border-radius:12px;padding:9px 11px;color:#dbeafe}.todo{margin:0;padding-left:18px}.todo li{margin:8px 0}.callout{border-left:4px solid var(--accent);background:rgba(56,189,248,.08);padding:12px 14px;border-radius:12px}.danger{border-left-color:var(--bad);background:rgba(239,68,68,.08)}.warning{border-left-color:var(--warn);background:rgba(245,158,11,.08)}
+    .nav{position:sticky;top:0;z-index:10;margin:-8px 0 16px;padding:10px 0;backdrop-filter:blur(12px)}.nav-inner{display:flex;gap:8px;overflow:auto}.nav a{white-space:nowrap;background:rgba(15,23,42,.85);border:1px solid var(--line);padding:7px 10px;border-radius:999px;color:#cbd5e1;font-size:13px}.footer{margin-top:20px;color:#64748b;text-align:center;font-size:13px}
+    @media(max-width:820px){h1{font-size:27px}.grid{display:block}.card{margin-top:14px}.hero{padding:22px}table{font-size:12px;display:block;overflow-x:auto;white-space:nowrap}.big{font-size:24px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav"><div class="nav-inner">
+    <a href="#summary">结论</a><a href="#versions">版本对比</a><a href="#timeline">实验时间线</a><a href="#reports">报告清单</a><a href="#samples">样本股票</a><a href="#cache">数据缓存</a><a href="#todo">待办</a>
+  </div></div>
+
+  <section class="hero" id="summary">
+    <div class="eyebrow">Chanlun Strategy Lab · Research Dashboard</div>
+    <h1>缠论小资金策略研究看板 🦐</h1>
+    <p>这里沉淀 V21/V22/V23 的测试结果、结论、风险和后续动作。当前不是宣传页，是复盘驾驶舱：少讲玄学，多留证据。</p>
+    <div class="badgebar">
+      <span class="badge good">当前主版本：V22-5000</span>
+      <span class="badge">variant: <span class="mono">v22_hold5_60pct_amt50m_exbottom5</span></span>
+      <span class="badge warn">V23C 仅候选：<span class="mono">v23c_stop_pre5_990</span></span>
+      <span class="badge bad">不建新表 / 不上传 V23 / 暂停 BigQuant 密集读取</span>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card col-4">
+      <h2>当前决策</h2>
+      <div class="callout"><b class="ok">V22 继续坐龙椅。</b><br><span class="muted">V23A/V23B 未通过；V23C 有苗头但提升太小，需要复核。</span></div>
+    </div>
+    <div class="card col-4">
+      <h2>V22 BigTrader</h2>
+      <div class="metric"><span>累计收益</span><b class="ok">161.31%</b></div>
+      <div class="metric"><span>年化收益</span><b>21.73%</b></div>
+      <div class="metric"><span>最大回撤</span><b class="warntext">14.06%</b></div>
+      <div class="metric"><span>Sharpe</span><b>1.33</b></div>
+    </div>
+    <div class="card col-4">
+      <h2>BigQuant 配额</h2>
+      <div class="big badtext">99,971,706 / 100,000,000</div>
+      <p class="muted small">本周额度基本耗尽。策略实验改走本地缓存，BigQuant 只做最终裁判。</p>
+    </div>
+  </section>
+
+  <section class="card" id="versions">
+    <h2>版本对比</h2>
+    <table>
+      <thead><tr><th>版本</th><th>核心逻辑</th><th>关键结果</th><th>结论</th></tr></thead>
+      <tbody>
+        <tr><td><b>V21-5000</b></td><td>早期小资金反向结构策略</td><td>BigTrader：累计 146.4%，年化 20.27%，Sharpe 0.85，最大回撤 20.59%</td><td><span class="pill warn">被 V22 替代</span></td></tr>
+        <tr><td><b>V22-5000</b><br><span class="mono small">v22_hold5_60pct_amt50m_exbottom5</span></td><td>原始 sell 类信号反向建仓，持有约 5 天；仓位 60%；剔除 V21 Bottom5</td><td>BigTrader：累计 161.31%，年化 21.73%，基准 -7.86%，Alpha 0.2，Beta 0.25，Sharpe 1.33，胜率 58.76%，盈亏比 1.48，波动 13.23%，最大回撤 14.06%</td><td><span class="pill good">当前主版本</span></td></tr>
+        <tr><td><b>V22 简化/SDK基准</b></td><td>本地/SDK简化口径，用于和 V23 扫描横向比较</td><td>total_return 339.30%，annual 35.16%，max_dd -12.51%，Sharpe 2.03</td><td><span class="pill good">V23 对照基准</span></td></tr>
+        <tr><td><b>V23A</b><br><span class="mono small">v23a_m30_hold5_70_amt50</span></td><td>日线 sell 后，30m 底分型 + 突破前4根高点 + 站上 MA8 直接入场</td><td>total_return 93.79%，annual 14.49%，max_dd -25.71%，Sharpe 0.78</td><td><span class="pill bad">不行：触发太多、噪音大、换手高</span></td></tr>
+        <tr><td><b>V23B</b><br><span class="mono small">v23b_pre5 / pre3</span></td><td>保留 V22 入场，只用 30m 触发做过滤</td><td>pre5：306.80% / 33.06% / -11.91% / 1.98；pre3 回撤到 -10.51% 但收益下降</td><td><span class="pill warn">可降回撤，但不划算</span></td></tr>
+        <tr><td><b>V23C</b><br><span class="mono small">v23c_stop_pre5_990</span></td><td>V22 负责入场；30m 负责识别反弹失败，跌破底分型低点×0.990 则提前退出</td><td>total_return 344.33%，annual 35.47%，max_dd -12.51%，Sharpe 2.06</td><td><span class="pill warn">候选：略优但提升微弱，需复核</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="grid" id="timeline">
+    <div class="card col-7">
+      <h2>实验时间线</h2>
+      <div class="timeline">
+        <div class="tl"><b>V21：跑通小资金订单级链路</b><p>确认 SDK 权限、表读取、BigTrader 回测、成交明细审计。</p></div>
+        <div class="tl"><b>V22：主版本固化</b><p>hold_days=5、target_position=60%、min_amount=5000万、剔除 V21 Bottom5；写入现有表，不新建表。</p></div>
+        <div class="tl"><b>V22_SIGNAL_AUDIT</b><p>确认 V22 赚的不是传统缠论买卖点的钱，而是原始 sell 信号后的短线反弹钱。</p></div>
+        <div class="tl"><b>m30-first 样本验证</b><p>19 批次：m30 触发早于/等于实际买入 89.47%；正收益批次触发后5日 +8.00%，负收益 -1.00%。</p></div>
+        <div class="tl"><b>V23A / V23B 全样本扫描</b><p>直接 m30 入场不行；m30 过滤 V22 不划算。</p></div>
+        <div class="tl"><b>V23C 失败提前退出</b><p>出现 <span class="mono">v23c_stop_pre5_990</span> 微弱候选，但未完成年度/贡献/订单级复核。</p></div>
+        <div class="tl"><b>本地数据缓存启动</b><p>腾讯日线、近期新浪30m已验证；等待通达信 5分钟数据 + mootdx 导入。</p></div>
+      </div>
+    </div>
+    <div class="card col-5">
+      <h2>策略解释</h2>
+      <div class="callout">
+        <b>V22 本质：</b><br>
+        <span class="mono">原始缠论 sell 类信号 → 反向买入 → 短持有 → 快速退出</span>
+      </div>
+      <p class="muted">它不是“buy 买、sell 卖”的传统解释，而是在利用结构确认滞后后的短线反弹效应。</p>
+      <div class="warning callout"><b>纪律：</b>不要把原始 buy1/sell1 标签直接解释成标准缠论买卖点；更不能用未来 K 线污染实盘信号。</div>
+    </div>
+  </section>
+
+  <section class="grid" id="reports">
+    <div class="card col-6">
+      <h2>关键报告清单</h2>
+      <ul class="todo">
+        <li><span class="mono">V22_FINAL_STRATEGY.md</span>：V22 最终策略说明</li>
+        <li><span class="mono">V22_BIGTRADER_RUNBOOK.md</span>：BigTrader 跑法</li>
+        <li><span class="mono">V22_SIGNAL_AUDIT.md</span>：V22 信号审计</li>
+        <li><span class="mono">V23_M30_FIRST_PROBE.md</span>：m30-first 样本验证</li>
+        <li><span class="mono">V23A_M30_FIRST_CACHED_SWEEP.md</span>：V23A 全样本扫描</li>
+        <li><span class="mono">V23B_FILTER_V22_BY_M30_FAST.md</span>：V23B 过滤实验</li>
+        <li><span class="mono">V23C_M30_FAILURE_EXIT.md</span>：V23C 失败退出实验</li>
+        <li><span class="mono">LOCAL_DATA_CACHE_PLAN.md</span>：本地数据缓存方案</li>
+      </ul>
+    </div>
+    <div class="card col-6" id="samples">
+      <h2>关键样本股票</h2>
+      <div class="chips">
+        <span class="chip">600585.SH 海螺水泥｜强正样本</span>
+        <span class="chip">600803.SH 新奥股份｜正样本</span>
+        <span class="chip">600999.SH 招商证券｜正样本</span>
+        <span class="chip">000425.SZ 徐工机械｜负样本</span>
+        <span class="chip">601838.SH 成都银行｜负样本</span>
+      </div>
+      <p class="muted small">这些样本用于验证“原始信号 → 反向执行 → 盈亏”以及 30m 触发/失败退出逻辑。</p>
+    </div>
+  </section>
+
+  <section class="grid" id="cache">
+    <div class="card col-6">
+      <h2>本地数据缓存状态</h2>
+      <table><thead><tr><th>数据</th><th>来源</th><th>状态</th></tr></thead><tbody>
+        <tr><td>日线</td><td>腾讯 fqkline</td><td><span class="pill good">已验证：2021-01-04 ~ 2026-06-15</span></td></tr>
+        <tr><td>30分钟</td><td>新浪</td><td><span class="pill warn">仅近期约 1000 根：2025-12 ~ 2026-06</span></td></tr>
+        <tr><td>历史30分钟</td><td>BigQuant / 通达信5m聚合</td><td><span class="pill warn">待导入</span></td></tr>
+        <tr><td>通达信5分钟</td><td>用户打包 + mootdx</td><td><span class="pill warn">等待上传</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="card col-6">
+      <h2>风险 / 纪律</h2>
+      <div class="danger callout"><b>禁止：</b>BigQuant 配额恢复前，不做全量/密集读取；不新建 V23 表；不上传未复核 variant。</div>
+      <ul class="todo muted">
+        <li>所有 BigTrader 查询必须带 <span class="mono">variant</span> 过滤。</li>
+        <li>实验先本地只读，确认有效后再追加现有表。</li>
+        <li>缠论识别不能参考未来 K 线；实盘信号要按当时可见数据生成。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card" id="todo">
+    <h2>下一步待办</h2>
+    <ol class="todo">
+      <li>接收通达信日线/5分钟数据包。</li>
+      <li>用 <span class="mono">mootdx</span> 读取通达信数据，统一转换为 <span class="mono">date/instrument/open/high/low/close/volume/amount</span>。</li>
+      <li>由 5分钟聚合 30分钟，并与腾讯/BigQuant样本日线做价格校验。</li>
+      <li>本地复跑 <span class="mono">v23c_stop_pre5_990</span>，做年度拆分和个股贡献。</li>
+      <li>若 V23C 复核稳定，再做 BigTrader 订单级最终验证。</li>
+      <li>后续把 600585 等执行图迁移成多图入口，不再让 /chan 只有单张 SVG。</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>旧执行图说明</h2>
+    <p class="muted">原 <span class="mono">600585.SH</span> 执行图已备份为 <span class="mono">stock/chan_execution_600585_backup.html</span>。后续可把多只样本执行图做成 `/chan` 的子入口或图表区。</p>
+    <p><a href="/chan/execution/600585">/chan/execution/600585</a> → 600585.SH 旧执行图备份</p>
+  </section>
+
+  <div class="footer">Last updated: 2026-06-16 · Chanlun Lab · 不追热闹，只留证据 🦐</div>
+</div>
+</body>
+</html>

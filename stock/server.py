@@ -182,6 +182,10 @@ class Handler(BaseHTTPRequestHandler):
         # 静态文件：/stock/ 提供页面，根路径不再重定向
         if path in ('/stock', '/stock/'):
             self.serve_file('index.html')
+        elif path in ('/chan', '/chan/'):
+            self.serve_file('chan.html')
+        elif path in ('/chan/execution/600585', '/chan/execution/600585/'):
+            self.serve_file('chan_execution_600585_backup.html')
         elif path in ('/stock/app.js',):
             self.serve_file('app.js')
         elif path in ('/stock/style.css',):
