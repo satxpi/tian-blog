@@ -13,6 +13,13 @@
 3. strategy 不允许直接处理 BigQuant/通达信/腾讯/新浪的原始字段差异。
 4. raw 数据只读保存，normalized 数据才给策略使用。
 5. 不要把 BigQuant 额度密集读取逻辑写进这里；BigQuant 只作为导出 CSV/缓存来源。
+6. 实际 Python 代码实现优先由 Claude Code 完成；主助手负责拆任务、验收和提交。
+
+## 开发分工
+
+- Claude Code：写 adapter、resample、strategy、backtest、测试脚本等代码。
+- 主助手：写项目文档、拆解任务、给 Claude Code 下指令、检查 diff、运行验收、控制风险。
+- 若任务只是文档、目录骨架、规则沉淀，主助手可以直接处理。
 
 ## 目录
 
@@ -56,13 +63,25 @@ schemas/STANDARD_SCHEMA.md
 
 ## 当前优先方向
 
-老板将提供通达信日线和 5分钟数据。优先做：
+老板将提供通达信日线和 5分钟数据。当前信息：
+
+- 日线可按月下载，已下载到 2005 年 7 月，历史长度足够。
+- 5分钟数据只能下载近约 700 天，约两年。
+- 两年 5分钟数据不够完整复现 2021-2026，但足够打通本地内核第一阶段，验证 5m→30m 聚合、m30 触发器、V23C 失败提前退出和近期回测。
+
+优先做：
 
 1. `adapters/tdx_adapter.py`：读取通达信/mootdx 数据，输出标准 bars。
 2. `engine/resample.py`：5m 聚合成 30m。
 3. `strategies/v22_inverse_rebound.py`：迁移 V22 逻辑，读取标准 signals/bars。
 4. `strategies/v23c_failure_exit.py`：迁移 V23C 失败提前退出逻辑。
 5. `backtests/run_local_backtest.py`：本地回测和年度/贡献诊断。
+
+详细计划见：
+
+```text
+PROJECT_PLAN.md
+```
 
 ## 标准字段
 
