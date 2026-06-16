@@ -323,6 +323,47 @@ data/stock_local/raw/sample/
 TDX_SAMPLE_ANALYSIS.md
 ```
 
+### P0.5：通达信 hq_cache 元信息解析（已分析）
+
+老板上传了：
+
+```text
+data/stock_local/raw/sample/hq_cache.zip
+```
+
+已确认这是通达信行情缓存目录，包含代码名称、行业、板块、财务/股本、基金/ETF/可转债/期权等多类数据。
+
+最有用的是：
+
+```text
+shs.tnf
+szs.tnf
+bjs.tnf
+```
+
+可生成证券基础信息表：
+
+```text
+data/stock_local/meta/instruments.csv
+```
+
+已验证：
+
+```text
+000001.SZ -> 平安银行
+000002.SZ -> 万 科Ａ
+600000.SH -> 浦发银行
+600585.SH -> 海螺水泥
+000001.SH -> 上证指数
+399001.SZ -> 深证成指
+```
+
+详细报告：
+
+```text
+HQ_CACHE_ANALYSIS.md
+```
+
 ### P1：Claude Code 实现 tdx adapter
 
 交给 Claude Code 的任务：
@@ -336,6 +377,20 @@ TDX_SAMPLE_ANALYSIS.md
 4. instrument 统一为 600000.SH / 000001.SZ；
 5. 输出 meta 质量报告；
 6. 提供小样本验证命令。
+```
+
+### P1.5：实现 hq_cache adapter
+
+交给 Claude Code 的任务：
+
+```text
+在 scripts/stock/local_quant/ 中实现通达信 hq_cache 元信息适配器。
+要求：
+1. 支持输入 hq_cache.zip 或解压后的 hq_cache/ 目录；
+2. 解析 shs.tnf、szs.tnf、bjs.tnf；
+3. 输出 data/stock_local/meta/instruments.csv 和 instruments.parquet；
+4. 字段：instrument, code, market, name, type_guess, source_file, updated_at；
+5. 不把 name 冗余写入 bars 行情表，策略/看板需要时通过 instrument join。
 ```
 
 ### P2：Claude Code 实现 5m → 30m 聚合
