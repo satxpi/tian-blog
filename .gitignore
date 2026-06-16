@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local quant generated/raw market data (large or user-provided)
+data/stock_local/raw/sample/
+data/stock_local/raw/tdx/
+data/stock_local/normalized/
+data/stock_local/meta/*.csv
+data/stock_local/meta/tdx_sample_csv/
+
+# Keep directory placeholders/docs trackable
+!data/stock_local/README.md
+!data/stock_local/**/.gitkeep
