@@ -83,6 +83,20 @@ schemas/STANDARD_SCHEMA.md
 PROJECT_PLAN.md
 ```
 
+## 存储选择
+
+标准化后的大数据主存储使用 Parquet，不使用 CSV/SQLite 作为分钟线主存储。
+
+推荐：
+
+- 原始数据：`data/stock_local/raw/tdx/` 原样保存；
+- 标准 bars：`data/stock_local/normalized/bars_5m/instrument=600585.SH/*.parquet`；
+- 查询/转换：优先 Polars 或 Pandas + PyArrow；
+- CSV：只用于小样本导出和人工核对；
+- DuckDB：后续如需要跨 Parquet SQL 分析再加入。
+
+当前 `.venv-bigquant311` 已有 `pyarrow` 和 `polars`，可用于 Parquet 读写。
+
 ## 标准字段
 
 以 `schemas/STANDARD_SCHEMA.md` 为准。最重要三类：

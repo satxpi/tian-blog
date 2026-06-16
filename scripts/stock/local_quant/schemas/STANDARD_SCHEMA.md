@@ -15,16 +15,20 @@
 
 ### 路径建议
 
+主存储使用 Parquet，CSV 只用于小样本导出/人工核对。
+
 ```text
-data/stock_local/normalized/bars/{freq}/{instrument}.csv
+data/stock_local/normalized/bars_1d/instrument={instrument}/*.parquet
+data/stock_local/normalized/bars_5m/instrument={instrument}/*.parquet
+data/stock_local/normalized/bars_30m/instrument={instrument}/*.parquet
 ```
 
 示例：
 
 ```text
-data/stock_local/normalized/bars/1d/600585.SH.csv
-data/stock_local/normalized/bars/5m/600585.SH.csv
-data/stock_local/normalized/bars/30m/600585.SH.csv
+data/stock_local/normalized/bars_1d/instrument=600585.SH/part-000.parquet
+data/stock_local/normalized/bars_5m/instrument=600585.SH/part-000.parquet
+data/stock_local/normalized/bars_30m/instrument=600585.SH/part-000.parquet
 ```
 
 ### 字段
@@ -58,14 +62,14 @@ sort = instrument, datetime
 ### 路径建议
 
 ```text
-data/stock_local/signals/{signal_name}.csv
+data/stock_local/signals/{signal_name}.parquet
 ```
 
 示例：
 
 ```text
-data/stock_local/signals/v11_d1_30m_points.csv
-data/stock_local/signals/v23_m30_bullish_trigger.csv
+data/stock_local/signals/v11_d1_30m_points.parquet
+data/stock_local/signals/v23_m30_bullish_trigger.parquet
 ```
 
 ### 字段
@@ -106,7 +110,7 @@ data/stock_local/signals/v23_m30_bullish_trigger.csv
 ### 路径建议
 
 ```text
-data/stock_local/positions/{strategy_name}_{variant}.csv
+data/stock_local/positions/{strategy_name}_{variant}.parquet
 ```
 
 ### 字段
@@ -136,7 +140,7 @@ date, instrument, position
 ### 路径建议
 
 ```text
-data/stock_local/backtests/{strategy_name}_{variant}_trades.csv
+data/stock_local/backtests/{strategy_name}_{variant}_trades.parquet
 ```
 
 ### 字段

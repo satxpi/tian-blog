@@ -29,22 +29,26 @@ raw/sina/         # 新浪公开行情原始响应/CSV
 
 ## 标准行情路径
 
+标准化大数据主格式使用 Parquet，按股票分区：
+
 ```text
-normalized/bars/1d/{instrument}.csv
-normalized/bars/5m/{instrument}.csv
-normalized/bars/30m/{instrument}.csv
+normalized/bars_1d/instrument={instrument}/*.parquet
+normalized/bars_5m/instrument={instrument}/*.parquet
+normalized/bars_30m/instrument={instrument}/*.parquet
 ```
 
 例如：
 
 ```text
-normalized/bars/30m/600585.SH.csv
+normalized/bars_30m/instrument=600585.SH/part-000.parquet
 ```
+
+CSV 只用于小样本导出、人工检查或和外部平台交换，不作为分钟线主存储。
 
 ## 数据纪律
 
 1. `raw/` 下数据只追加、不改写。
-2. 适配器输出到 `normalized/`、`signals/`、`positions/`。
+2. 适配器输出到 `normalized/`、`signals/`、`positions/`，主格式优先 Parquet。
 3. 每次转换应在 `meta/` 写覆盖范围和质量检查。
 4. 大体积数据默认不要提交 git。
 5. 策略不得直接读 `raw/`。

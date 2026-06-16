@@ -93,6 +93,102 @@ claude
 
 > 两年 5分钟数据够做本地内核第一阶段，不必为了全历史 30m 卡住项目。
 
+## 本地存储方案
+
+### 结论
+
+标准化后的本地数据优先使用：
+
+```text
+Parquet 文件 + Polars/Pandas 读取；后续按需加 DuckDB 查询层。
+```
+
+不建议把分钟线长期主存储放在 CSV 或 SQLite：
+
+- CSV：通用、方便人工查看，但体积大、读取慢、类型不稳定；适合导出和小样本，不适合主存储。
+- SQLite：适合小型关系型记录和状态表，但分钟线/多股票时间序列分析不如列式格式顺手；批量扫描和分列读取不占优。
+- Parquet：列式、压缩好、读取快、保留字段类型，适合行情 bars/signals/positions/backtests。
+- DuckDB：适合后续跨 Parquet 做 SQL 查询、聚合和诊断；当前环境未必预装，可作为第二阶段工具。
+
+当前环境检查：
+
+- 系统 Python：有 pandas/sqlite3；暂无 pyarrow/duckdb/polars。
+- `.venv-bigquant311`：有 pandas、pyarrow、polars；暂无 duckdb。
+
+因此第一阶段代码优先使用 `.venv-bigquant311` 运行，并落盘 Parquet。
+
+### 推荐落盘结构
+
+```text
+data/stock_local/raw/tdx/                      # 通达信原始文件，原样保存
+
+data/stock_local/normalized/bars_1d/           # 标准日线 Parquet
+  instrument=600585.SH/part-*.parquet
+
+data/stock_local/normalized/bars_5m/           # 标准5分钟 Parquet
+  instrument=600585.SH/part-*.parquet
+
+data/stock_local/normalized/bars_30m/          # 5m聚合后的30分钟 Parquet
+  instrument=600585.SH/part-*.parquet
+
+data/stock_local/signals/                      # 标准信号 Parquet/CSV
+
+data/stock_local/positions/                    # 标准仓位 Parquet/CSV
+
+data/stock_local/meta/                         # 数据质量报告 CSV/JSON
+```
+
+说明：
+
+- 大数据主格式用 Parquet。
+- 小报告/人工核对结果可以同时导出 CSV。
+- 原始通达信数据永远保留在 `raw/tdx/`，不覆盖。
+- 策略层只读 `normalized/`、`signals/`、`positions/`。
+
+### 分区建议
+
+优先按股票分区：
+
+```text
+bars_5m/instrument=600585.SH/*.parquet
+bars_30m/instrument=600585.SH/*.parquet
+```
+
+原因：
+
+- 我们常按单只股票做缠论结构和图形审计；
+- 方便增量更新某只股票；
+- 方便先用少量样本跑通；
+- 后续 DuckDB/Polars 都能直接扫描分区目录。
+
+如果未来全市场规模变大，再考虑按 `freq/date/instrument` 多级分区。
+
+### 读取方式
+
+Python 优先：
+
+```python
+import polars as pl
+
+df = pl.scan_parquet("data/stock_local/normalized/bars_5m/instrument=600585.SH/*.parquet")
+```
+
+需要 pandas 时：
+
+```python
+import pandas as pd
+
+df = pd.read_parquet("...")
+```
+
+如果后续安装 DuckDB，可直接：
+
+```sql
+SELECT *
+FROM read_parquet('data/stock_local/normalized/bars_5m/**/*.parquet')
+WHERE instrument = '600585.SH'
+```
+
 ## 数据策略
 
 ### 第一阶段：以通达信近两年 5分钟数据跑通闭环
