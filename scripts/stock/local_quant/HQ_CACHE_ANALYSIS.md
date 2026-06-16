@@ -307,7 +307,7 @@ data/stock_local/meta/instruments.csv
 字段建议：
 
 ```text
-instrument,code,market,name,type_guess,source_file,updated_at
+instrument,code,tdx_symbol,market,name,type_guess,source_file,updated_at
 ```
 
 可选输出 Parquet：

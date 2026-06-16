@@ -7,6 +7,7 @@ data/stock_local/raw/sample/
 data/stock_local/raw/tdx/
 data/stock_local/normalized/
 data/stock_local/meta/*.csv
+data/stock_local/meta/*.parquet
 data/stock_local/meta/tdx_sample_csv/
 
 # Keep directory placeholders/docs trackable
