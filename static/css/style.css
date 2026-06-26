@@ -597,6 +597,41 @@ nav.main-nav a:hover, nav.main-nav a.active {
   margin: 1rem 0;
 }
 
+/* 表格 */
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  display: block;
+}
+
+.article-body thead {
+  border-bottom: 2px solid var(--accent);
+}
+
+.article-body th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text);
+  white-space: nowrap;
+  background: rgba(255,77,0,0.04);
+}
+
+.article-body td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  vertical-align: top;
+}
+
+.article-body tbody tr:hover {
+  background: rgba(255,77,0,0.03);
+}
+
 /* 侧边栏 */
 .article-sidebar {
   position: sticky;
