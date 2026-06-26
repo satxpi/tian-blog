@@ -421,6 +421,9 @@ class BlogBuilder {
     const siteUrl = (this.config.site_url || '').replace(/\/$/, '');
     writeFileSync(join(OUT_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${siteUrl}/sitemap.xml\n`, 'utf8');
     console.log('✓ 生成了 robots.txt');
+    // 禁止 GitHub Pages 用 Jekyll 处理
+    writeFileSync(join(OUT_DIR, '.nojekyll'), '');
+    console.log('✓ 生成 .nojekyll');
   }
 
   // ── 全量构建 ──
