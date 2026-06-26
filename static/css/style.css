@@ -602,7 +602,7 @@ nav.main-nav a:hover, nav.main-nav a.active {
   margin: 1.5rem 0;
   font-size: 0.9rem;
   table-layout: auto;
-  border: 1px solid #5a5a5a;
+  border: 1px solid rgba(255,255,255,0.15);
 }
 
 .article-body thead {
@@ -617,12 +617,12 @@ nav.main-nav a:hover, nav.main-nav a.active {
   color: var(--text);
   white-space: nowrap;
   background: rgba(255,77,0,0.06);
-  border: 1px solid #5a5a5a;
+  border: 1px solid rgba(255,255,255,0.15);
 }
 
 .article-body td {
   padding: 0.6rem 1rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid rgba(255,255,255,0.1);
   color: var(--text-muted);
   vertical-align: middle;
   word-break: break-all;
@@ -636,8 +636,12 @@ nav.main-nav a:hover, nav.main-nav a.active {
   min-width: 80px;
 }
 
+.article-body tbody tr:nth-child(even) {
+  background: rgba(255,255,255,0.02);
+}
+
 .article-body tbody tr:hover {
-  background: rgba(255,77,0,0.03);
+  background: rgba(255,77,0,0.05);
 }
 
 /* 侧边栏 */
