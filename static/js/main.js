@@ -117,7 +117,7 @@
   window.addEventListener('pagehide', flushSave);
   window.addEventListener('beforeunload', flushSave);
 
-  // ── 恢复 ──
+  // ── 恢复：连续多次滚到位，对抗图片加载导致的布局抖动 ──
   var savedY = parseInt(localStorage.getItem(key), 10);
   if (!savedY || savedY < 40) return;
 
@@ -125,19 +125,20 @@
   function restore() {
     attempts++;
     var maxY = document.body.scrollHeight - window.innerHeight;
-    if (maxY >= savedY) {
-      setTimeout(function () {
-        window.scrollTo(0, Math.min(savedY, maxY));
-      }, 50); // 微延迟，等渲染帧稳了再滚
-    } else if (attempts < 15) {
-      setTimeout(restore, 300); // 图片没加载完，等一等再试
+    window.scrollTo(0, Math.min(savedY, maxY));
+    // 前 3 秒持续重试（每 250ms 一次），对抗布局变化
+    if (attempts < 12) {
+      setTimeout(restore, 250);
     }
   }
 
+  // 等 DOM 就绪就开始
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', restore);
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(restore, 80);
+    });
   } else {
-    restore();
+    setTimeout(restore, 80);
   }
 })();
 
