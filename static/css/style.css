@@ -601,8 +601,7 @@ nav.main-nav a:hover, nav.main-nav a.active {
   border-collapse: collapse;
   margin: 1.5rem 0;
   font-size: 0.9rem;
-  overflow-x: auto;
-  display: block;
+  table-layout: auto;
 }
 
 .article-body thead {
@@ -623,7 +622,16 @@ nav.main-nav a:hover, nav.main-nav a.active {
   padding: 0.6rem 1rem;
   border-bottom: 1px solid var(--border);
   color: var(--text-muted);
-  vertical-align: top;
+  vertical-align: middle;
+  word-break: break-all;
+}
+
+.article-body td:first-child {
+  white-space: nowrap;
+  color: var(--text);
+  font-weight: 500;
+  width: 1%;
+  min-width: 80px;
 }
 
 .article-body tbody tr:hover {
