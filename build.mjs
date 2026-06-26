@@ -306,7 +306,13 @@ class BlogBuilder {
 
     for (let i = 0; i < this.posts.length; i++) {
       const post = this.posts[i];
-      const colPosts = colMap[post.collection] || [];
+      const fullColPosts = colMap[post.collection] || [];
+      // 侧边栏只显示当前文章前后各 2 篇（共 5 篇）
+      const ci = fullColPosts.findIndex(p => p.slug === post.slug);
+      const sidebarColPosts = ci >= 0
+        ? fullColPosts.slice(Math.max(0, ci - 2), Math.min(fullColPosts.length, ci + 3))
+            .map((p, idx) => ({ ...p, _col_idx: Math.max(0, ci - 2) + idx + 1 }))
+        : fullColPosts.map((p, idx) => ({ ...p, _col_idx: idx + 1 }));
       const tocHtml = post.toc_html;
 
       let prevPost = null, nextPost = null;
@@ -318,7 +324,8 @@ class BlogBuilder {
         description: post.excerpt,
         og_type: 'article',
         post, toc: tocHtml,
-        collection_posts: post.collection ? colPosts : [],
+        collection_posts: post.collection ? sidebarColPosts : [],
+        collection_url: post.collection ? `../collections/${post.collection_slug}.html` : null,
         prev_post: prevPost, next_post: nextPost,
       };
       this.renderPage('post.html', ctx, join(postsOut, `${post.slug}.html`), 1);
@@ -357,21 +364,14 @@ class BlogBuilder {
       };
       this.collectionsList.push(colObj);
 
-      const ctx = {
-        title: `合集：${name}`,
-        description: meta.description || '',
-        collection: colObj,
-        posts: postsIn,
-        pagination: null,
-      };
-      this.renderPage('collection.html', ctx, join(colDir, `${slug}.html`), 1);
+      const pages = this.buildCollectionPages(colObj, postsIn, slug, colDir);
+      colObj.pages = pages;
     }
 
     // 补充未定义的合集
     for (const [name, postsIn] of Object.entries(colMap)) {
       const slug = name.toLowerCase().replace(/\s+/g, '-');
       if (this.collectionsMeta[slug]) continue;
-      // 也检查是否已由 yaml 定义（通过 name 匹配）
       if (Object.values(this.collectionsMeta).some(m => m.name === name)) continue;
 
       const colObj = {
@@ -381,11 +381,8 @@ class BlogBuilder {
       };
       this.collectionsList.push(colObj);
 
-      const ctx = {
-        title: `合集：${name}`, description: '',
-        collection: colObj, posts: postsIn,
-      };
-      this.renderPage('collection.html', ctx, join(colDir, `${slug}.html`), 1);
+      const pages = this.buildCollectionPages(colObj, postsIn, slug, colDir);
+      colObj.pages = pages;
     }
 
     // 合集索引
@@ -396,6 +393,37 @@ class BlogBuilder {
     };
     this.renderPage('collections_index.html', ctx, join(OUT_DIR, 'collections.html'));
     console.log(`✓ 构建了 ${this.collectionsList.length} 个合集页`);
+  }
+
+  // ── 合集分页 ──
+  buildCollectionPages(colObj, postsIn, slug, colDir) {
+    const PP = 20;
+    const total = Math.max(1, Math.ceil(postsIn.length / PP));
+    const pages = [];
+    for (let page = 1; page <= total; page++) {
+      const start = (page - 1) * PP;
+      const chunk = postsIn.slice(start, start + PP);
+      const pageSlug = page === 1 ? `${slug}.html` : `${slug}-${page}.html`;
+      const p = { current: page, total };
+      pages.push(p);
+
+      const ctx = {
+        title: `合集：${colObj.name}${page > 1 ? ` (第${page}页)` : ''}`,
+        description: colObj.description || '',
+        collection: { ...colObj, url: `collections/${slug}.html` },
+        posts: chunk,
+        pagination: {
+          current: page, total,
+          has_prev: page > 1,
+          has_next: page < total,
+          prev_url: page === 2 ? `${slug}.html` : `${slug}-${page - 1}.html`,
+          next_url: `${slug}-${page + 1}.html`,
+          pages: Array.from({ length: total }, (_, i) => ({ num: i + 1, url: i === 0 ? `${slug}.html` : `${slug}-${i + 1}.html` })),
+        },
+      };
+      this.renderPage('collection.html', ctx, join(colDir, pageSlug), 1);
+    }
+    return pages;
   }
 
   // ── 构建首页 ──

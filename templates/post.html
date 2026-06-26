@@ -85,12 +85,14 @@
     <!-- 合集内文章列表 -->
     {% if collection_posts %}
     <div class="sidebar-widget">
-      <h4>合集：{{ post.collection }}</h4>
+      <h4>
+        <a href="{{ collection_url }}" style="color:inherit;text-decoration:none;">合集：{{ post.collection }}</a>
+      </h4>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
         {% for cp in collection_posts %}
         <li>
           <a href="../{{ cp.url }}" style="font-size:0.83rem;color:{% if cp.slug == post.slug %}var(--accent){% else %}var(--text-muted){% endif %};text-decoration:none;">
-            {{ loop.index }}. {{ cp.title }}
+            {{ cp._col_idx }}. {{ cp.title }}
           </a>
         </li>
         {% endfor %}
