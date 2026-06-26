@@ -401,7 +401,7 @@ class BlogBuilder {
       description: '老田的个人博客，记录从小田变老田的成长历程',
       featured_post: featured,
       recent_posts: recent,
-      collections: this.collectionsList.slice(0, 4),
+      collections: this.collectionsList,
       total_posts: this.posts.length,
       total_collections: this.collectionsList.length,
       years_writing: yearsWriting,
