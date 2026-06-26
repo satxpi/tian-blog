@@ -299,6 +299,10 @@ class BlogBuilder {
         colMap[p.collection].push(p);
       }
     }
+    // 合集内按 slug 升序（保持自然阅读顺序，如易经 00→01→02→...→46）
+    for (const key of Object.keys(colMap)) {
+      colMap[key].sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
+    }
 
     for (let i = 0; i < this.posts.length; i++) {
       const post = this.posts[i];
@@ -334,6 +338,9 @@ class BlogBuilder {
         if (!colMap[p.collection]) colMap[p.collection] = [];
         colMap[p.collection].push(p);
       }
+    }
+    for (const key of Object.keys(colMap)) {
+      colMap[key].sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
     }
 
     this.collectionsList = [];
