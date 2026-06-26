@@ -33,7 +33,7 @@
         <h3 style="font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:700;margin-bottom:0.3rem;">{{ post.title }}</h3>
         <p style="font-size:0.83rem;color:var(--text-muted);">{{ post.excerpt | slice(0, 80) }}…</p>
       </div>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);white-space:nowrap;">{{ post.date }}</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);white-space:nowrap;">{{ post.date_display }}</span>
     </a>
     {% endfor %}
   </div>

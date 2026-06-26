@@ -25,7 +25,7 @@
     <div style="display:flex;flex-direction:column;gap:0.4rem;">
       {% for post in posts %}
       <a href="{{ post.url }}" class="archive-link">
-        <span class="archive-date">{{ post.date_month_day }}</span>
+        <span class="archive-date">{{ post.date_display }}</span>
         <span class="archive-title">{{ post.title }}</span>
         {% if post.collection %}<span class="post-collection-badge" style="flex-shrink:0;">{{ post.collection }}</span>{% endif %}
       </a>

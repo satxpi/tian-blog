@@ -47,7 +47,7 @@
     <a href="{{ featured_post.url }}" class="post-card featured">
       <div>
         <div class="post-meta">
-          <span class="post-date">{{ featured_post.date }}</span>
+          <span class="post-date">{{ featured_post.date_display }}</span>
           {% if featured_post.collection %}<span class="post-collection-badge">{{ featured_post.collection }}</span>{% endif %}
           {% for tag in featured_post.tags %}<span class="post-tag">{{ tag }}</span>{% endfor %}
         </div>
@@ -61,7 +61,7 @@
     {% for post in recent_posts %}
     <a href="{{ post.url }}" class="post-card">
       <div class="post-meta">
-        <span class="post-date">{{ post.date }}</span>
+        <span class="post-date">{{ post.date_display }}</span>
         {% if post.collection %}<span class="post-collection-badge">{{ post.collection }}</span>{% endif %}
         {% for tag in post.tags %}<span class="post-tag">{{ tag }}</span>{% endfor %}
       </div>

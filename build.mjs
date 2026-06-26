@@ -55,6 +55,7 @@ function slugify(text) {
 }
 
 // ─── Front Matter 解析 ────────────────────────────────
+const THIS_YEAR = new Date().getFullYear();
 const FRONTMATTER_RE = /^---\s*\n(.*?)\n---\s*\n/s;
 
 function parsePost(filePath) {
@@ -97,6 +98,7 @@ function parsePost(filePath) {
     date: dateStr, date_sort: dateSort,
     date_month_day: dateStr.slice(5),
     date_year: dateStr.slice(0, 4),
+    date_display: dateStr.slice(0, 4) === String(THIS_YEAR) ? dateStr.slice(5) : dateStr,
     tags, collection,
     collection_slug: collection.toLowerCase().replace(/\s+/g, '-'),
     author: meta.author || '老田',
