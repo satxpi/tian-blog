@@ -331,13 +331,16 @@ class BlogBuilder {
     const colDir = join(OUT_DIR, 'collections');
     mkdirSync(colDir, { recursive: true });
 
-    // 按合集分组
+    // 按合集分组，组内按 slug 升序（保持自然阅读顺序）
     const colMap = {};
     for (const p of this.posts) {
       if (p.collection) {
         if (!colMap[p.collection]) colMap[p.collection] = [];
         colMap[p.collection].push(p);
       }
+    }
+    for (const key of Object.keys(colMap)) {
+      colMap[key].sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
     }
 
     this.collectionsList = [];
