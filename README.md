@@ -94,37 +94,6 @@ collections:
 ```
 
 ---
-
-## 配置 Google AdSense
-
-1. 申请 Google AdSense 账号并获得审核通过
-2. 修改 `config.yaml` 中的 `adsense_publisher_id`
-3. 全局替换所有模板文件中的 `ca-pub-XXXXXXXXXXXXXXXX` 为你的真实 ID
-4. 全局替换广告位中的 `data-ad-slot="XXXXXXXXXX"` 为你的广告单元 ID
-
-### AdSense 合规要求
-
-本项目已内置：
-- ✅ 隐私政策页面 (`privacy.html`)
-- ✅ Cookie 同意横幅（首次访问弹出）
-- ✅ `robots.txt` 和 `sitemap.xml` 自动生成
-- ✅ 广告旁边无违禁内容
-- ✅ `<meta name="robots" content="index, follow">` 确保内容可索引
-
----
-
-## 部署
-
-推送 `main` 分支到 GitHub，GitHub Actions 会自动构建并部署到 GitHub Pages。
-
-如需手动部署，构建后将 `output/` 目录部署到任意静态托管：
-- **GitHub Pages** — 自动（push 即部署）
-- **Vercel / Netlify** — 连接仓库，构建命令 `node build.mjs --prod`，输出目录 `output`
-- **Cloudflare Pages** — 同上
-- **任意静态托管** — 上传 `output/` 目录
-
----
-
 ## License
 
 MIT — 随便用，欢迎改

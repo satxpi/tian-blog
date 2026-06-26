@@ -46,12 +46,12 @@
     <!-- 上下篇导航 -->
     <nav class="post-nav" style="display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
       {% if prev_post %}
-      <a href="{{ prev_post.url }}" style="text-decoration:none;color:var(--text-muted);font-size:0.85rem;flex:1;">
+      <a href="../{{ prev_post.url }}" style="text-decoration:none;color:var(--text-muted);font-size:0.85rem;flex:1;">
         ← {{ prev_post.title }}
       </a>
       {% else %}<span></span>{% endif %}
       {% if next_post %}
-      <a href="{{ next_post.url }}" style="text-decoration:none;color:var(--text-muted);font-size:0.85rem;flex:1;text-align:right;">
+      <a href="../{{ next_post.url }}" style="text-decoration:none;color:var(--text-muted);font-size:0.85rem;flex:1;text-align:right;">
         {{ next_post.title }} →
       </a>
       {% endif %}
@@ -89,7 +89,7 @@
       <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
         {% for cp in collection_posts %}
         <li>
-          <a href="{{ cp.url }}" style="font-size:0.83rem;color:{% if cp.slug == post.slug %}var(--accent){% else %}var(--text-muted){% endif %};text-decoration:none;">
+          <a href="../{{ cp.url }}" style="font-size:0.83rem;color:{% if cp.slug == post.slug %}var(--accent){% else %}var(--text-muted){% endif %};text-decoration:none;">
             {{ loop.index }}. {{ cp.title }}
           </a>
         </li>

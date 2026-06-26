@@ -50,7 +50,26 @@
   });
 })();
 
-// ── 阅读进度条 ──
+// ── 回到顶部 ──
+(function () {
+  const btn = document.getElementById('back-to-top');
+  if (!btn) return;
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        btn.classList.toggle('visible', window.scrollY > 400);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
 (function () {
   const bar = document.createElement('div');
   bar.id = 'reading-progress';

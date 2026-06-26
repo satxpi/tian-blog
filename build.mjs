@@ -69,7 +69,11 @@ function parsePost(filePath) {
 
   const fname  = filePath.split(/[\\/]/).pop().replace(/\.md$/, '');
   const slug   = meta.slug || fname;
-  const dateStr = meta.date ? String(meta.date).slice(0, 10) : '1970-01-01';
+  // dateSort：完整时间戳用于排序（支持 date: "2024-06-15 10:30" 或 "2024-06-15T10:30:00"）
+  const dateSort = meta.date
+    ? String(meta.date).replace(' ', 'T')  // 统一为 ISO 格式方便排序
+    : '1970-01-01T00:00:00';
+  const dateStr = dateSort.slice(0, 10);
   let tags = meta.tags || [];
   if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
 
@@ -90,7 +94,8 @@ function parsePost(filePath) {
   const collection = meta.collection || '';
   return {
     slug, title: meta.title || fname,
-    date: dateStr, date_month_day: dateStr.slice(5),
+    date: dateStr, date_sort: dateSort,
+    date_month_day: dateStr.slice(5),
     date_year: dateStr.slice(0, 4),
     tags, collection,
     collection_slug: collection.toLowerCase().replace(/\s+/g, '-'),
@@ -224,8 +229,25 @@ class BlogBuilder {
       return p;
     });
 
-    // 按 date 字段降序排列（最新的在前），文件夹深度不影响排序
-    this.posts.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    // 将 collection_slug 与 yaml 定义的 slug 对齐
+    // 建立 name → yaml_slug 的反向映射
+    const nameToSlug = {};
+    for (const [slug, meta] of Object.entries(this.collectionsMeta)) {
+      nameToSlug[meta.name] = slug;
+    }
+    for (const p of this.posts) {
+      if (p.collection && nameToSlug[p.collection]) {
+        p.collection_slug = nameToSlug[p.collection];
+      }
+    }
+
+    // 排序：主键 date_sort（含时间的完整戳），次键 slug（同一天内按文件名/slug 排序）
+    this.posts.sort((a, b) => {
+      const dateCmp = String(b.date_sort).localeCompare(String(a.date_sort));
+      if (dateCmp !== 0) return dateCmp;
+      // 同时间 → slug 字母序兜底
+      return String(a.slug).localeCompare(String(b.slug));
+    });
     console.log(`✓ 加载了 ${this.posts.length} 篇文章`);
   }
 

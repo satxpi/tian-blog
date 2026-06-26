@@ -1152,6 +1152,42 @@ nav.main-nav a:hover, nav.main-nav a.active {
 .post-card:nth-child(4) { animation-delay: 0.2s; }
 .post-card:nth-child(5) { animation-delay: 0.25s; }
 
+/* ── 回到顶部 ── */
+#back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+#back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+#back-to-top:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+}
+
 /* ── 工具类 ── */
 .mt-sm { margin-top: 1rem; }
 .mt-md { margin-top: 2rem; }
