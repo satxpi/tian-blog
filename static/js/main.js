@@ -84,6 +84,45 @@
   });
 })();
 
+// ── 断续阅读：记住文章阅读位置 ──
+(function () {
+  const articleBody = document.querySelector('.article-body');
+  if (!articleBody) return; // 只在文章页执行
+
+  // 用文章 slug 作为 key
+  const pathParts = location.pathname.split('/');
+  const slug = pathParts[pathParts.length - 1].replace('.html', '');
+  if (!slug) return;
+  const key = `read_pos_${slug}`;
+
+  // 加载时恢复位置
+  const savedY = parseInt(localStorage.getItem(key), 10);
+  if (savedY && savedY > 100) {
+    setTimeout(() => {
+      window.scrollTo({ top: savedY, behavior: 'instant' });
+    }, 200);
+  }
+
+  // 每 2 秒保存当前阅读位置（节流）
+  let saveTimer;
+  function savePosition() {
+    if (saveTimer) return;
+    saveTimer = setTimeout(() => {
+      const y = window.scrollY;
+      if (y > 50) {
+        localStorage.setItem(key, y);
+      }
+      saveTimer = null;
+    }, 2000);
+  }
+
+  window.addEventListener('scroll', savePosition, { passive: true });
+  window.addEventListener('beforeunload', () => {
+    const y = window.scrollY;
+    if (y > 50) localStorage.setItem(key, y);
+  });
+})();
+
 // ── 导航当前页高亮 ──
 (function () {
   const links = document.querySelectorAll('nav.main-nav a');
