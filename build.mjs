@@ -208,20 +208,24 @@ class BlogBuilder {
 
   // ── 加载所有 MD 文章 ──
   loadPosts() {
-    const files = this.walkDir(POSTS_DIR).sort((a, b) => {
-      // 按文件名字母倒序，保证日期文件名靠前
-      return b.path.localeCompare(a.path);
-    });
+    const files = this.walkDir(POSTS_DIR);
+    const config = this.config;
+    // 是否从文件夹名自动推断合集（默认 true）
+    const autoCollection = config.auto_collection !== false;
+
     this.posts = files.map(f => {
       const p = parsePost(f.path);
       p.url = `posts/${p.slug}.html`;
-      // 从文件夹名自动推断合集（若文章未显式声明）
-      if (!p.collection && f.folder) {
+      // 从文件夹名自动推断合集（仅当文章未显式声明 collection 时）
+      if (autoCollection && !p.collection && f.folder) {
         p.collection = f.folder;
         p.collection_slug = f.folder.toLowerCase().replace(/\s+/g, '-');
       }
       return p;
     });
+
+    // 按 date 字段降序排列（最新的在前），文件夹深度不影响排序
+    this.posts.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     console.log(`✓ 加载了 ${this.posts.length} 篇文章`);
   }
 

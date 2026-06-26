@@ -13,3 +13,8 @@ adsense_publisher_id: "ca-pub-XXXXXXXXXXXXXXXX"
 
 # 每页文章数
 posts_per_page: 10
+
+# 是否从文件夹名自动推断合集（默认 true）
+# true  = 文章放在 "读书笔记/" 文件夹 → 自动归入「读书笔记」合集
+# false = 只有 Front Matter 显式写 collection: 才归入合集
+auto_collection: true
