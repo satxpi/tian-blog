@@ -193,6 +193,13 @@ class BlogBuilder {
     if (existsSync(STATIC_DIR)) {
       cpSync(STATIC_DIR, join(OUT_DIR, 'static'), { recursive: true });
     }
+    // 管理页面入口 — ins/index.html → /ins/ (GitHub Pages clean URL)
+    const adminSrc = join(STATIC_DIR, 'admin.html');
+    if (existsSync(adminSrc)) {
+      const insDir = join(OUT_DIR, 'ins');
+      mkdirSync(insDir, { recursive: true });
+      cpSync(adminSrc, join(insDir, 'index.html'));
+    }
     console.log('✓ 静态文件已复制');
   }
 
@@ -554,7 +561,7 @@ class BlogBuilder {
   // ── robots.txt ──
   buildRobots() {
     const siteUrl = (this.config.site_url || '').replace(/\/$/, '');
-    writeFileSync(join(OUT_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${siteUrl}/sitemap.xml\n`, 'utf8');
+    writeFileSync(join(OUT_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /ins\nDisallow: /api/\nSitemap: ${siteUrl}/sitemap.xml\n`, 'utf8');
     console.log('✓ 生成了 robots.txt');
     // 禁止 GitHub Pages 用 Jekyll 处理
     writeFileSync(join(OUT_DIR, '.nojekyll'), '');
@@ -590,6 +597,16 @@ class BlogBuilder {
 function serve(port = 8080) {
   process.chdir(OUT_DIR);
   const server = createServer((req, res) => {
+    // 管理页面短入口
+    if (req.url === '/ins' || req.url === '/ins/') {
+      const adminPath = join(OUT_DIR, 'ins', 'index.html');
+      if (existsSync(adminPath)) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(readFileSync(adminPath, 'utf8'));
+        return;
+      }
+    }
+
     let filePath = req.url === '/' ? '/index.html' : req.url;
     const fullPath = join(OUT_DIR, filePath);
     const ext = extname(fullPath).toLowerCase();

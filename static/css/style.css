@@ -436,11 +436,6 @@ nav.main-nav a:hover, nav.main-nav a.active {
   transform: translateY(-2px);
 }
 
-.collection-icon {
-  font-size: 1.8rem;
-  line-height: 1;
-}
-
 .collection-title {
   font-family: 'Noto Serif SC', serif;
   font-weight: 700;
