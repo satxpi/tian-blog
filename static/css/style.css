@@ -265,14 +265,13 @@ nav.main-nav a:hover, nav.main-nav a.active {
 /* 主推卡片（全宽） */
 .post-card.featured {
   grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 2rem;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 2rem;
+  padding: 2.5rem 3rem;
   text-decoration: none;
   color: inherit;
   transition: border-color 0.2s, transform 0.2s;
@@ -358,7 +357,26 @@ nav.main-nav a:hover, nav.main-nav a.active {
 }
 
 .post-card.featured h3 {
-  font-size: 1.8rem;
+  font-size: 2rem;
+  max-width: 85%;
+}
+
+.post-card.featured h3,
+.post-card.featured .post-meta,
+.post-card.featured .post-excerpt,
+.post-card.featured .read-more {
+  position: relative;
+  z-index: 1;
+}
+
+.post-card.featured .post-excerpt {
+  font-size: 1rem;
+  max-width: 75%;
+  line-height: 1.8;
+}
+
+.post-card.featured .read-more {
+  font-size: 0.85rem;
 }
 
 .post-excerpt {
@@ -386,16 +404,21 @@ nav.main-nav a:hover, nav.main-nav a.active {
 
 .post-card:hover .read-more::after { transform: translateX(4px); }
 
-/* 数字大字装饰 */
+/* 数字大字装饰（绝对定位作背景） */
 .post-card.featured .card-number {
-  font-size: clamp(4rem, 10vw, 8rem);
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(6rem, 15vw, 12rem);
   font-weight: 900;
   color: var(--accent);
-  opacity: 0.12;
+  opacity: 0.06;
   line-height: 1;
   font-family: 'Space Grotesk', sans-serif;
-  text-align: right;
   user-select: none;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ── 合集列表 ── */
