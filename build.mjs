@@ -393,7 +393,8 @@ class BlogBuilder {
 
   // ── 构建首页 ──
   buildIndex() {
-    const featured = this.posts.find(p => p.featured) || null;
+    // 取最新一篇文章作为 Hero 卡片
+    const featured = this.posts[0] || null;
     const recent   = this.posts.filter(p => p !== featured).slice(0, 6);
     const lastPost = this.posts[this.posts.length - 1];
     const yearsWriting = lastPost ? new Date().getFullYear() - parseInt(lastPost.date.slice(0, 4)) : 0;
