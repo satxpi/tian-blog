@@ -83,19 +83,19 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
   </button>
 
-  <script src="{{ static_root }}js/main.js"></script>
-
   <!-- 搜索弹窗 -->
   <div class="search-overlay" id="search-overlay">
     <div class="search-dialog" role="dialog" aria-label="搜索文章">
       <div class="search-input-wrap">
         <svg class="search-input-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="search-input" class="search-input" placeholder="搜文章、关键词、标签…" autocomplete="off" autofocus>
+        <input type="text" id="search-input" class="search-input" placeholder="搜文章、关键词、标签…" autocomplete="off">
         <button class="search-close" id="search-close" aria-label="关闭搜索">&times;</button>
       </div>
       <div class="search-hint" id="search-hint">输入关键词开始搜索</div>
       <div class="search-results" id="search-results"></div>
     </div>
   </div>
+
+  <script src="{{ static_root }}js/main.js"></script>
 </body>
 </html>
