@@ -90,37 +90,55 @@
   if (!articleBody) return; // 只在文章页执行
 
   // 用文章 slug 作为 key
-  const pathParts = location.pathname.split('/');
+  const pathParts = location.pathname.replace(/\/$/, '').split('/');
   const slug = pathParts[pathParts.length - 1].replace('.html', '');
   if (!slug) return;
   const key = `read_pos_${slug}`;
 
-  // 加载时恢复位置
-  const savedY = parseInt(localStorage.getItem(key), 10);
-  if (savedY && savedY > 100) {
-    setTimeout(() => {
-      window.scrollTo({ top: savedY, behavior: 'instant' });
-    }, 200);
-  }
-
-  // 每 2 秒保存当前阅读位置（节流）
+  // ── 保存位置 ──
   let saveTimer;
-  function savePosition() {
-    if (saveTimer) return;
+  function save() {
+    const y = window.scrollY;
+    if (y < 80) return; // 接近顶部不存
+    clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
+      localStorage.setItem(key, String(y));
+    }, 500);
+  }
+  window.addEventListener('scroll', save, { passive: true });
+
+  // 点击任何链接离开前保存
+  document.addEventListener('click', function onLink(e) {
+    const a = e.target.closest('a');
+    if (a && a.href && !a.href.startsWith('#')) {
       const y = window.scrollY;
-      if (y > 50) {
-        localStorage.setItem(key, y);
-      }
-      saveTimer = null;
-    }, 2000);
+      if (y > 80) localStorage.setItem(key, String(y));
+    }
+  }, true); // capture phase，确保在导航前执行
+
+  // ── 恢复位置（等页面完全加载后再滚）──
+  const savedY = parseInt(localStorage.getItem(key), 10);
+  if (!savedY || savedY < 100) return;
+
+  let restored = false;
+  function tryRestore() {
+    if (restored) return;
+    const maxY = document.body.scrollHeight - window.innerHeight;
+    if (maxY < savedY) return; // 页面还不够高，再等
+    restored = true;
+    window.scrollTo({ top: Math.min(savedY, maxY), behavior: 'instant' });
   }
 
-  window.addEventListener('scroll', savePosition, { passive: true });
-  window.addEventListener('beforeunload', () => {
-    const y = window.scrollY;
-    if (y > 50) localStorage.setItem(key, y);
-  });
+  // 页面 load 事件触发后尝试恢复（图片/font 已加载）
+  if (document.readyState === 'complete') {
+    tryRestore();
+  } else {
+    window.addEventListener('load', tryRestore);
+  }
+  // 兜底：300ms 后再试一次
+  setTimeout(() => {
+    if (!restored) tryRestore();
+  }, 500);
 })();
 
 // ── 导航当前页高亮 ──
