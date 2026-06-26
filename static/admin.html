@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>发布文章</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0e0e0e;--bg-card:#161616;--bg-input:#1a1a1a;
+    --accent:#ff4d00;--accent2:#ffd700;--text:#e8e4dc;--text-muted:#8a8a8a;
+    --border:#2a2a2a;--radius:4px;--green:#00c853;--red:#ff1744;
+  }
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Space Grotesk','Noto Serif SC',sans-serif;
+    line-height:1.6;min-height:100vh;
+  }
+  .container{max-width:800px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+  /* Header */
+  .page-header{margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid var(--accent);}
+  .page-header h1{font-family:'Noto Serif SC',serif;font-size:1.8rem;font-weight:900;letter-spacing:1px;}
+  .page-header p{color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;}
+
+  /* Tabs */
+  .tabs{display:flex;gap:0;margin-bottom:2rem;border-bottom:1px solid var(--border);}
+  .tab-btn{
+    background:none;border:none;color:var(--text-muted);cursor:pointer;
+    font-size:0.9rem;padding:0.75rem 1.5rem;font-family:inherit;
+    border-bottom:2px solid transparent;transition:all 0.2s;
+    letter-spacing:1px;
+  }
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* Form */
+  .form-group{margin-bottom:1.5rem;}
+  .form-group label{
+    display:block;font-size:0.78rem;color:var(--text-muted);
+    margin-bottom:0.4rem;letter-spacing:1px;text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .form-group input,.form-group textarea,.form-group select{
+    width:100%;background:var(--bg-input);border:1px solid var(--border);
+    border-radius:var(--radius);padding:0.65rem 0.85rem;color:var(--text);
+    font-size:0.92rem;font-family:inherit;outline:none;
+    transition:border-color 0.2s;
+  }
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{
+    border-color:var(--accent);
+  }
+  .form-group textarea{resize:vertical;min-height:120px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  @media(max-width:480px){.form-row{grid-template-columns:1fr;}}
+
+  /* 正文编辑器 */
+  #editor-body{min-height:400px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;line-height:1.8;}
+
+  /* 上传区 */
+  .upload-zone{
+    border:2px dashed var(--border);border-radius:var(--radius);
+    padding:3rem 1.5rem;text-align:center;cursor:pointer;
+    transition:all 0.2s;margin-bottom:1.5rem;
+  }
+  .upload-zone:hover,.upload-zone.dragover{
+    border-color:var(--accent);background:rgba(255,77,0,0.05);
+  }
+  .upload-zone .icon{font-size:2.5rem;margin-bottom:0.75rem;}
+  .upload-zone .hint{color:var(--text-muted);font-size:0.88rem;}
+  .upload-zone .hint strong{color:var(--accent);}
+  .upload-info{
+    background:var(--bg-card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;
+    display:none;gap:0.75rem;align-items:center;
+  }
+  .upload-info.show{display:flex;}
+  .upload-info .file-icon{font-size:1.5rem;}
+  .upload-info .file-name{flex:1;font-size:0.9rem;}
+  .upload-info .file-size{color:var(--text-muted);font-size:0.8rem;font-family:'JetBrains Mono',monospace;}
+  .upload-info .remove-file{background:none;border:none;color:var(--red);cursor:pointer;font-size:1.2rem;}
+
+  /* 预览 */
+  .preview-section{margin-top:2rem;}
+  .preview-toggle{
+    background:none;border:1px solid var(--border);border-radius:var(--radius);
+    color:var(--text-muted);cursor:pointer;padding:0.5rem 1rem;
+    font-size:0.82rem;font-family:inherit;transition:all 0.2s;
+  }
+  .preview-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  .preview-box{
+    margin-top:1rem;background:var(--bg-card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:1.5rem;display:none;
+    font-family:'Noto Serif SC',serif;font-size:1rem;line-height:2;
+    max-height:500px;overflow-y:auto;
+  }
+  .preview-box.show{display:block;}
+  .preview-box h1,.preview-box h2,.preview-box h3{color:var(--text);}
+  .preview-box h2{margin:1.5rem 0 0.75rem;padding-left:0.75rem;border-left:3px solid var(--accent);}
+  .preview-box code{font-family:'JetBrains Mono',monospace;background:#1a1a2e;padding:2px 6px;border-radius:3px;color:var(--accent2);}
+  .preview-box pre{background:#1a1a2e;padding:1rem;border-radius:var(--radius);overflow-x:auto;margin:1rem 0;}
+  .preview-box pre code{background:none;padding:0;color:var(--text);}
+  .preview-box blockquote{border-left:3px solid var(--accent2);padding:0.5rem 1rem;background:var(--bg-input);margin:1rem 0;}
+
+  /* 按钮 */
+  .btn-submit{
+    background:var(--accent);color:#fff;border:none;border-radius:var(--radius);
+    padding:0.8rem 2rem;font-size:0.95rem;cursor:pointer;
+    font-family:inherit;font-weight:600;letter-spacing:1px;
+    transition:opacity 0.2s;width:100%;margin-top:1rem;
+  }
+  .btn-submit:hover{opacity:0.85;}
+  .btn-submit:disabled{opacity:0.5;cursor:not-allowed;}
+
+  /* Toast */
+  .toast{
+    position:fixed;top:1.5rem;right:1.5rem;z-index:9999;
+    padding:1rem 1.5rem;border-radius:var(--radius);
+    font-size:0.9rem;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,0.5);
+    transform:translateX(120%);transition:transform 0.3s ease;
+    display:flex;align-items:center;gap:0.75rem;
+  }
+  .toast.show{transform:translateX(0);}
+  .toast.success{background:#1b5e20;border:1px solid var(--green);color:#e8f5e9;}
+  .toast.error{background:#b71c1c;border:1px solid var(--red);color:#ffebee;}
+  .toast .toast-icon{font-size:1.2rem;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>📝 发布文章</h1>
+    <p>在线编辑 Markdown 或上传 .md 文件</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('edit')">✏️ 在线编辑</button>
+    <button class="tab-btn" onclick="switchTab('upload')">📤 上传文件</button>
+  </div>
+
+  <!-- Tab: 在线编辑 -->
+  <div id="tab-edit" class="tab-panel active">
+    <div class="form-row">
+      <div class="form-group">
+        <label>标题 *</label>
+        <input type="text" id="edit-title" placeholder="文章标题">
+      </div>
+      <div class="form-group">
+        <label>日期</label>
+        <input type="date" id="edit-date">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>标签（逗号分隔）</label>
+        <input type="text" id="edit-tags" placeholder="成长, 回忆, 技术">
+      </div>
+      <div class="form-group">
+        <label>合集</label>
+        <select id="edit-collection">
+          <option value="">— 无合集 —</option>
+          <option value="成长这件事">🌱 成长这件事</option>
+          <option value="代码人生">💻 代码人生</option>
+          <option value="在路上">🚂 在路上</option>
+          <option value="读书这件小事">📖 读书这件小事</option>
+          <option value="闲聊易经">☯️ 闲聊易经</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>摘要</label>
+      <textarea id="edit-excerpt" placeholder="简要描述文章内容（可选）" style="min-height:60px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label>正文（Markdown）*</label>
+      <textarea id="editor-body" placeholder="开始写 Markdown...&#10;&#10;## 小标题&#10;正文内容...&#10;&#10;> 引用文字&#10;&#10;```python&#10;print('hello')&#10;```"></textarea>
+    </div>
+
+    <button class="preview-toggle" onclick="togglePreview()">👁️ 预览</button>
+    <div id="preview-box" class="preview-box"></div>
+
+    <button class="btn-submit" onclick="publishArticle()">🚀 发布文章</button>
+  </div>
+
+  <!-- Tab: 上传文件 -->
+  <div id="tab-upload" class="tab-panel">
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div class="icon">📂</div>
+      <div class="hint">点击选择或拖拽 <strong>.md</strong> 文件到此处</div>
+    </div>
+    <input type="file" id="file-input" accept=".md" style="display:none;" onchange="handleFile(event)">
+    
+    <div class="upload-info" id="upload-info">
+      <span class="file-icon">📄</span>
+      <span class="file-name" id="file-name"></span>
+      <span class="file-size" id="file-size"></span>
+      <button class="remove-file" onclick="clearFile()" title="移除">✕</button>
+    </div>
+
+    <button class="btn-submit" id="btn-upload" onclick="uploadFile()" disabled>🚀 上传并发布</button>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span class="toast-icon"></span><span class="toast-msg"></span></div>
+
+<script>
+// ─── 初始化 ──────────────────────────────────────────
+document.getElementById('edit-date').value = new Date().toISOString().slice(0, 10);
+
+let selectedFile = null;
+
+// ─── Tab 切换 ────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+}
+
+// ─── 文件处理 ────────────────────────────────────────
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) setFile(file);
+});
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (file) setFile(file);
+}
+
+function setFile(file) {
+  if (!file.name.endsWith('.md')) {
+    showToast('error', '只接受 .md 文件');
+    return;
+  }
+  selectedFile = file;
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = formatSize(file.size);
+  document.getElementById('upload-info').classList.add('show');
+  document.getElementById('btn-upload').disabled = false;
+}
+
+function clearFile() {
+  selectedFile = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('upload-info').classList.remove('show');
+  document.getElementById('btn-upload').disabled = true;
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+// ─── Markdown 预览 ───────────────────────────────────
+function togglePreview() {
+  const box = document.getElementById('preview-box');
+  if (box.classList.contains('show')) {
+    box.classList.remove('show');
+    return;
+  }
+  const md = document.getElementById('editor-body').value;
+  if (!md.trim()) { showToast('error', '没有内容可预览'); return; }
+  box.innerHTML = parseMD(md);
+  box.classList.add('show');
+  box.scrollIntoView({ behavior: 'smooth' });
+}
+
+function parseMD(text) {
+  // 简单 Markdown → HTML
+  let html = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    // 代码块
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${code.trim()}</code></pre>`)
+    // 标题
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // 粗体/斜体
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // 行内代码
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // 引用
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    // 水平线
+    .replace(/^---$/gm, '<hr>')
+    // 链接
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    // 无序列表
+    .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
+    // 段落
+    .replace(/^(?!<[a-z]|$)(.+)$/gm, '<p>$1</p>')
+    // 合并连续 blockquote/li
+    .replace(/<\/blockquote>\n<blockquote>/g, '<br>')
+    .replace(/<\/li>\n<li>/g, '');
+  return html;
+}
+
+// ─── 在线发布 ────────────────────────────────────────
+async function publishArticle() {
+  const title = document.getElementById('edit-title').value.trim();
+  const content = document.getElementById('editor-body').value.trim();
+
+  if (!title) { showToast('error', '请填写文章标题'); return; }
+  if (!content) { showToast('error', '请填写文章内容'); return; }
+
+  const btn = document.querySelector('#tab-edit .btn-submit');
+  btn.disabled = true;
+  btn.textContent = '⏳ 发布中...';
+
+  try {
+    const res = await fetch('/api/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        date: document.getElementById('edit-date').value,
+        tags: document.getElementById('edit-tags').value,
+        collection: document.getElementById('edit-collection').value,
+        excerpt: document.getElementById('edit-excerpt').value,
+        content
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('success', data.message);
+      // 清空表单
+      document.getElementById('edit-title').value = '';
+      document.getElementById('editor-body').value = '';
+      document.getElementById('edit-tags').value = '';
+      document.getElementById('edit-excerpt').value = '';
+      document.getElementById('edit-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('edit-collection').value = '';
+      document.getElementById('preview-box').classList.remove('show');
+    } else {
+      showToast('error', data.error || '发布失败');
+    }
+  } catch (e) {
+    showToast('error', '网络错误：' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 发布文章';
+  }
+}
+
+// ─── 文件上传 ────────────────────────────────────────
+async function uploadFile() {
+  if (!selectedFile) return;
+
+  const btn = document.getElementById('btn-upload');
+  btn.disabled = true;
+  btn.textContent = '⏳ 上传中...';
+
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+      showToast('success', data.message);
+      clearFile();
+    } else {
+      showToast('error', data.error || '上传失败');
+    }
+  } catch (e) {
+    showToast('error', '网络错误：' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 上传并发布';
+  }
+}
+
+// ─── Toast ───────────────────────────────────────────
+let toastTimer;
+function showToast(type, msg) {
+  const toast = document.getElementById('toast');
+  toast.className = `toast ${type}`;
+  toast.querySelector('.toast-icon').textContent = type === 'success' ? '✅' : '❌';
+  toast.querySelector('.toast-msg').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// ─── 快捷键 ──────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 's') {
+    e.preventDefault();
+    if (document.getElementById('tab-edit').classList.contains('active')) {
+      publishArticle();
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -17,7 +17,8 @@
       </div>
     </header>
 
-    <!-- 文章内广告（顶部） -->
+    <!-- 文章内广告（顶部 - 已隐藏） -->
+    <!--
     <div class="ad-unit ad-unit-inline">
       <ins class="adsbygoogle"
            style="display:block;text-align:center"
@@ -27,12 +28,14 @@
            data-ad-slot="XXXXXXXXXX"></ins>
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
+    -->
 
     <div class="article-body">
       {{ post.content_html }}
     </div>
 
-    <!-- 文章内广告（底部） -->
+    <!-- 文章内广告（底部 - 已隐藏） -->
+    <!--
     <div class="ad-unit ad-unit-inline">
       <ins class="adsbygoogle"
            style="display:block"
@@ -42,6 +45,7 @@
            data-full-width-responsive="true"></ins>
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
+    -->
 
     <!-- 上下篇导航 -->
     <nav class="post-nav" style="display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
@@ -71,7 +75,8 @@
     </div>
     {% endif %}
 
-    <!-- 侧边广告 -->
+    <!-- 侧边广告（已隐藏） -->
+    <!--
     <div class="ad-unit ad-unit-rect">
       <ins class="adsbygoogle"
            style="display:block"
@@ -81,6 +86,7 @@
            data-full-width-responsive="true"></ins>
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
+    -->
 
     <!-- 合集内文章列表 -->
     {% if collection_posts %}

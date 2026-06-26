@@ -24,10 +24,11 @@
   <meta name="search-index" content="{{ root_url }}search.json">
   <!-- 样式 -->
   <link rel="stylesheet" href="{{ static_root }}css/style.css">
-  <!-- Google AdSense -->
-  <!-- 替换 ca-pub-XXXXXXXXXXXXXXXX 为你的真实 Publisher ID -->
+  <!-- Google AdSense (已隐藏) -->
+  <!--
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
      crossorigin="anonymous"></script>
+  -->
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="{{ static_root }}images/favicon.svg">
 </head>
@@ -67,13 +68,13 @@
         <a href="{{ root_url }}sitemap.xml">站点地图</a>
       </div>
       <p class="footer-copy">© {{ year }} 老田的博客 · 从小田变老田</p>
-      <p class="footer-disclaimer">本站部分内容包含广告。广告由 Google AdSense 提供，不代表本站立场。</p>
+      <!-- <p class="footer-disclaimer">本站部分内容包含广告。广告由 Google AdSense 提供，不代表本站立场。</p> -->
     </div>
   </footer>
 
   <!-- ══ Cookie 同意横幅 ══ -->
   <div id="cookie-banner" role="dialog" aria-label="Cookie 使用说明">
-    <p>本站使用 Cookie 以改善体验并展示个性化广告。继续使用即表示您同意我们的
+    <p>本站使用 Cookie 以改善体验。继续使用即表示您同意我们的
        <a href="{{ root_url }}privacy.html">隐私政策</a>。</p>
     <button id="btn-accept-cookie" class="btn-accept">明白了</button>
   </div>
@@ -97,5 +98,14 @@
   </div>
 
   <script src="{{ static_root }}js/main.js"></script>
+  <script>
+    // 隐藏入口：Ctrl+Shift+E → 管理页面
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+        e.preventDefault();
+        window.location.href = '/ins/';
+      }
+    });
+  </script>
 </body>
 </html>
