@@ -103,6 +103,7 @@ function parsePost(filePath) {
     collection_slug: collection.toLowerCase().replace(/\s+/g, '-'),
     author: meta.author || '老田',
     featured: !!meta.featured,
+    sequence: meta.sequence !== undefined ? Number(meta.sequence) : null,
     excerpt, content_html: contentHtml,
     toc_html: tocHtml, toc_items: tocItems,
     read_time: readTime,
@@ -306,9 +307,15 @@ class BlogBuilder {
         colMap[p.collection].push(p);
       }
     }
-    // 合集内按 slug 升序（保持自然阅读顺序，如易经 00→01→02→...→46）
+    // 合集内按 sequence 升序，未设置 sequence 的按 slug 升序
     for (const key of Object.keys(colMap)) {
-      colMap[key].sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
+      colMap[key].sort((a, b) => {
+        const sa = a.sequence, sb = b.sequence;
+        if (sa !== null && sb !== null) return sa - sb;
+        if (sa !== null) return -1;
+        if (sb !== null) return 1;
+        return String(a.slug).localeCompare(String(b.slug));
+      });
     }
 
     for (let i = 0; i < this.posts.length; i++) {
@@ -354,7 +361,13 @@ class BlogBuilder {
       }
     }
     for (const key of Object.keys(colMap)) {
-      colMap[key].sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
+      colMap[key].sort((a, b) => {
+        const sa = a.sequence, sb = b.sequence;
+        if (sa !== null && sb !== null) return sa - sb;
+        if (sa !== null) return -1;
+        if (sb !== null) return 1;
+        return String(a.slug).localeCompare(String(b.slug));
+      });
     }
 
     this.collectionsList = [];
