@@ -445,6 +445,24 @@ class BlogBuilder {
     }, join(OUT_DIR, 'privacy.html'));
   }
 
+  // ── 搜索索引 JSON ──
+  buildSearchIndex() {
+    const siteUrl = (this.config.site_url || '').replace(/\/$/, '');
+    const index = this.posts.map(p => ({
+      title:    p.title,
+      slug:     p.slug,
+      url:      `${siteUrl}/${p.url}`,
+      date:     p.date,
+      excerpt:  p.excerpt,
+      tags:     p.tags,
+      collection: p.collection,
+      // 去标签的纯文本，供内容搜索（截取前 2000 字，控制索引体积）
+      text:     p.content_html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 2000),
+    }));
+    writeFileSync(join(OUT_DIR, 'search.json'), JSON.stringify(index), 'utf8');
+    console.log(`✓ 生成了搜索索引 (${index.length} 篇)`);
+  }
+
   // ── sitemap.xml ──
   buildSitemap() {
     const siteUrl = (this.config.site_url || '').replace(/\/$/, '');
@@ -496,6 +514,7 @@ class BlogBuilder {
     this.buildArchive();
     this.buildAbout();
     this.buildPrivacy();
+    this.buildSearchIndex();
     this.buildSitemap();
     this.buildRobots();
     const elapsed = ((performance.now() - t0) / 1000).toFixed(2);

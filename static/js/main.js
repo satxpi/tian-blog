@@ -88,3 +88,189 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     }
   });
 });
+
+// ═══════════════════════════════════════════
+// 文章搜索
+// ═══════════════════════════════════════════
+(function () {
+  const overlay   = document.getElementById('search-overlay');
+  const trigger   = document.getElementById('search-trigger');
+  const closeBtn  = document.getElementById('search-close');
+  const input     = document.getElementById('search-input');
+  const results   = document.getElementById('search-results');
+  const hint      = document.getElementById('search-hint');
+
+  if (!overlay || !trigger) return;
+
+  let searchIndex = null;
+  let indexLoaded = false;
+
+  // ── 加载搜索索引 ──
+  async function loadIndex() {
+    if (indexLoaded) return;
+    try {
+      const base = document.querySelector('meta[name="search-index"]')
+        ? document.querySelector('meta[name="search-index"]').content
+        : (location.pathname.includes('/posts/') ? '../search.json' : 'search.json');
+      const resp = await fetch(base);
+      searchIndex = await resp.json();
+      indexLoaded = true;
+    } catch (e) {
+      searchIndex = [];
+      indexLoaded = true;
+    }
+  }
+
+  // ── 开/关弹窗 ──
+  function openSearch() {
+    overlay.classList.add('active');
+    input.focus();
+    input.select();
+    loadIndex();
+  }
+
+  function closeSearch() {
+    overlay.classList.remove('active');
+    input.value = '';
+    results.innerHTML = '';
+    hint.classList.remove('hidden');
+  }
+
+  trigger.addEventListener('click', openSearch);
+  closeBtn.addEventListener('click', closeSearch);
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeSearch();
+  });
+
+  // 键盘快捷键 Ctrl+K / Cmd+K
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('active') ? closeSearch() : openSearch();
+    }
+    if (e.key === 'Escape' && overlay.classList.contains('active')) {
+      closeSearch();
+    }
+  });
+
+  // ── 搜索逻辑 ──
+  function fuzzyMatch(text, query) {
+    if (!text || !query) return 0;
+    const t = text.toLowerCase();
+    const q = query.toLowerCase();
+    if (t === q) return 100;
+    if (t.startsWith(q)) return 80;
+    if (t.includes(q)) return 60;
+    // 模糊：逐字匹配
+    let qi = 0, score = 0, consecutive = 0;
+    for (let i = 0; i < t.length && qi < q.length; i++) {
+      if (t[i] === q[qi]) {
+        qi++;
+        consecutive++;
+        score += consecutive * 2;
+      } else {
+        consecutive = 0;
+      }
+    }
+    return qi === q.length ? score : 0;
+  }
+
+  function search(query) {
+    if (!searchIndex || !query.trim()) {
+      results.innerHTML = '';
+      hint.classList.remove('hidden');
+      return;
+    }
+    const q = query.trim();
+    const scored = searchIndex.map(item => {
+      let score = 0;
+      let matchField = '';
+
+      const titleScore = fuzzyMatch(item.title, q);
+      if (titleScore > score) { score = titleScore; matchField = 'title'; }
+
+      const excerptScore = fuzzyMatch(item.excerpt, q);
+      if (excerptScore > score) { score = excerptScore; matchField = 'excerpt'; }
+
+      // 标签：精准匹配加分最多
+      const tagHit = item.tags.some(t => t.toLowerCase().includes(q.toLowerCase()));
+      if (tagHit) { score = Math.max(score, 90); matchField = 'tag'; }
+
+      // 全文搜索
+      if (item.text) {
+        const textScore = fuzzyMatch(item.text, q);
+        if (textScore > score) { score = textScore; matchField = 'content'; }
+      }
+
+      // 合集名匹配
+      if (item.collection && item.collection.toLowerCase().includes(q.toLowerCase())) {
+        score = Math.max(score, 70);
+        matchField = 'collection';
+      }
+
+      return { ...item, score, matchField };
+    });
+
+    const filtered = scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+    renderResults(filtered, q);
+  }
+
+  function highlightText(text, query, maxLen) {
+    if (!query || !text) return text.slice(0, maxLen || 200);
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(${escaped})`, 'gi');
+    let result = text.replace(re, '<em>$1</em>');
+    if (maxLen && result.length > maxLen) {
+      // 截取第一处高亮附近
+      const idx = result.indexOf('<em>');
+      const start = Math.max(0, idx - 40);
+      result = (start > 0 ? '…' : '') + result.slice(start, start + maxLen) + (result.length > start + maxLen ? '…' : '');
+    }
+    return result;
+  }
+
+  function renderResults(items, query) {
+    hint.classList.add('hidden');
+    if (!items.length) {
+      results.innerHTML = `<div class="search-empty">没有找到与 <strong>${query}</strong> 相关的文章</div>`;
+      return;
+    }
+
+    const matchLabels = { title: '标题', tag: '标签', content: '正文', excerpt: '摘要', collection: '合集' };
+    results.innerHTML = items.map(item => `
+      <a href="${item.url}" class="search-result-card">
+        <div class="search-result-title">
+          ${highlightText(item.title, query, 80)}
+          <span class="match-tag">${matchLabels[item.matchField] || '匹配'}</span>
+        </div>
+        <div class="search-result-excerpt">
+          ${highlightText(item.excerpt || (item.text || '').slice(0, 120), query, 160)}
+        </div>
+        <div class="search-result-meta">
+          <span>${item.date}</span>
+          ${item.collection ? `<span>📂 ${item.collection}</span>` : ''}
+          ${item.tags.length ? `<span>🏷 ${item.tags.slice(0, 3).join(', ')}</span>` : ''}
+        </div>
+      </a>
+    `).join('');
+  }
+
+  // 防抖输入
+  let debounceTimer;
+  input.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => search(input.value), 200);
+  });
+
+  // 标签点击 → 触发搜索
+  document.addEventListener('click', e => {
+    const tagEl = e.target.closest('.tag-pill');
+    if (tagEl) {
+      e.preventDefault();
+      const tag = tagEl.textContent.trim();
+      openSearch();
+      input.value = tag;
+      search(tag);
+    }
+  });
+})();
