@@ -84,62 +84,36 @@
   });
 })();
 
-// ── 断续阅读：记住文章阅读位置 ──
+// ── 断续阅读：记住阅读位置 ──
 (function () {
-  var articleBody = document.querySelector('.article-body');
-  if (!articleBody) return;
-
-  var pathParts = location.pathname.replace(/\/$/, '').split('/');
-  var slug = pathParts[pathParts.length - 1].replace('.html', '');
+  if (!document.querySelector('.article-body')) return;
+  var slug = location.pathname.split('/').pop().replace('.html', '');
   if (!slug) return;
   var key = 'read_pos_' + slug;
 
-  // 关掉 Chrome 自带的滚动恢复，避免它把我们滚的位置弹回去
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
-  }
-
-  // ── 保存：滚动节流 200ms ──
-  var saveTimer;
-  function flushSave() {
-    clearTimeout(saveTimer);
-    var y = window.scrollY || window.pageYOffset;
-    if (y > 40) {
-      try { localStorage.setItem(key, String(y)); } catch (e) {}
-    }
-  }
+  // ── 保存 ──
+  var timer;
   window.addEventListener('scroll', function () {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(flushSave, 200);
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      var y = window.scrollY;
+      if (y > 40) localStorage.setItem(key, y);
+    }, 300);
   }, { passive: true });
 
-  // 离开页面时立即保存
-  window.addEventListener('pagehide', flushSave);
-  window.addEventListener('beforeunload', flushSave);
+  // 离开页面前保存（覆盖点链接、后退、关标签页所有场景）
+  window.addEventListener('pagehide', function () {
+    var y = window.scrollY;
+    if (y > 40) localStorage.setItem(key, y);
+  });
 
-  // ── 恢复：连续多次滚到位，对抗图片加载导致的布局抖动 ──
+  // ── 恢复：等页面完全加载后滚 ──
   var savedY = parseInt(localStorage.getItem(key), 10);
   if (!savedY || savedY < 40) return;
 
-  var attempts = 0;
-  function restore() {
-    attempts++;
-    var maxY = document.body.scrollHeight - window.innerHeight;
-    window.scrollTo(0, Math.min(savedY, maxY));
-    // 前 3 秒持续重试（每 250ms 一次），对抗布局变化
-    if (attempts < 12) {
-      setTimeout(restore, 250);
-    }
-  }
-
-  // 等 DOM 就绪就开始
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(restore, 80);
-    });
-  } else {
-    setTimeout(restore, 80);
-  }
+  window.addEventListener('load', function () {
+    window.scrollTo(0, savedY);
+  });
 })();
 
 // ── 导航当前页高亮 ──
