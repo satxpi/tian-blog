@@ -132,6 +132,21 @@
 <body>
 <div class="container">
 
+  <!-- API 状态 -->
+  <div id="api-banner" class="api-banner" style="display:none">
+    <span class="api-banner-icon"></span>
+    <span class="api-banner-msg"></span>
+  </div>
+
+  <style>
+    .api-banner{
+      padding:0.75rem 1rem;border-radius:var(--radius);margin-bottom:1.5rem;
+      font-size:0.9rem;display:flex;align-items:center;gap:0.5rem;
+    }
+    .api-banner.local{background:#1b3a1b;border:1px solid #2e7d32;color:#c8e6c9;}
+    .api-banner.remote{background:#3a1b1b;border:1px solid #c62828;color:#ffcdd2;}
+  </style>
+
   <!-- Header -->
   <div class="page-header">
     <h1>📝 发布文章</h1>
@@ -313,8 +328,43 @@ function parseMD(text) {
   return html;
 }
 
+// ─── API 可用性检测 ──────────────────────────────────
+let apiAvailable = false;
+
+(async function checkAPI() {
+  try {
+    const res = await fetch('/api/build', { method: 'HEAD' });
+    apiAvailable = res.ok;
+  } catch (e) {
+    apiAvailable = false;
+  }
+
+  const banner = document.getElementById('api-banner');
+  banner.style.display = 'flex';
+
+  if (apiAvailable) {
+    banner.className = 'api-banner local';
+    banner.querySelector('.api-banner-icon').textContent = '✅';
+    banner.querySelector('.api-banner-msg').textContent = '本地模式 — API 可用，可以发布文章';
+  } else {
+    banner.className = 'api-banner remote';
+    banner.querySelector('.api-banner-icon').textContent = '⚠️';
+    banner.querySelector('.api-banner-msg').innerHTML =
+      '当前为线上静态站点，无法直接发布。请在本地运行 <code>npm run admin</code> 后使用后台。';
+    // 禁用提交按钮
+    document.querySelectorAll('.btn-submit').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+    document.getElementById('btn-upload').disabled = true;
+    document.getElementById('btn-upload').style.opacity = '0.5';
+  }
+})();
+
 // ─── 在线发布 ────────────────────────────────────────
 async function publishArticle() {
+  if (!apiAvailable) {
+    showToast('error', '线上站点不支持直接发布，请在本地运行 npm run admin');
+    return;
+  }
+
   const title = document.getElementById('edit-title').value.trim();
   const content = document.getElementById('editor-body').value.trim();
 
@@ -362,6 +412,10 @@ async function publishArticle() {
 
 // ─── 文件上传 ────────────────────────────────────────
 async function uploadFile() {
+  if (!apiAvailable) {
+    showToast('error', '线上站点不支持上传，请在本地运行 npm run admin');
+    return;
+  }
   if (!selectedFile) return;
 
   const btn = document.getElementById('btn-upload');
