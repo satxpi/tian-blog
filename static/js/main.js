@@ -94,59 +94,50 @@
   if (!slug) return;
   var key = 'read_pos_' + slug;
 
+  // 关掉 Chrome 自带的滚动恢复，避免它把我们滚的位置弹回去
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
   // ── 保存：滚动节流 200ms ──
   var saveTimer;
   function flushSave() {
     clearTimeout(saveTimer);
     var y = window.scrollY || window.pageYOffset;
-    if (y > 60) {
+    if (y > 40) {
       try { localStorage.setItem(key, String(y)); } catch (e) {}
     }
   }
-  function onScroll() {
+  window.addEventListener('scroll', function () {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(flushSave, 200);
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
+  }, { passive: true });
 
-  // 页面隐藏 / 卸载时保存（覆盖浏览器后退、关闭标签页等场景）
-  document.addEventListener('visibilitychange', function () {
-    if (document.hidden) flushSave();
-  });
+  // 离开页面时立即保存
   window.addEventListener('pagehide', flushSave);
   window.addEventListener('beforeunload', flushSave);
 
-  // ── 恢复：多次重试，直到页面足够高或放弃 ──
+  // ── 恢复 ──
   var savedY = parseInt(localStorage.getItem(key), 10);
-  if (!savedY || savedY < 60) return;
+  if (!savedY || savedY < 40) return;
 
-  var restored = false;
-  var retries = 0;
-  function tryRestore() {
-    if (restored) return;
-    retries++;
+  var attempts = 0;
+  function restore() {
+    attempts++;
     var maxY = document.body.scrollHeight - window.innerHeight;
-    if (maxY < savedY - 50) {
-      if (retries < 6) setTimeout(tryRestore, 300); // 高度还不够，等
-      return;
+    if (maxY >= savedY) {
+      setTimeout(function () {
+        window.scrollTo(0, Math.min(savedY, maxY));
+      }, 50); // 微延迟，等渲染帧稳了再滚
+    } else if (attempts < 15) {
+      setTimeout(restore, 300); // 图片没加载完，等一等再试
     }
-    restored = true;
-    var target = Math.min(savedY, maxY);
-    // 用 requestAnimationFrame 确保在渲染帧执行
-    requestAnimationFrame(function () {
-      window.scrollTo({ top: target, behavior: 'instant' });
-    });
   }
 
-  // 处理 bfcache：页面从缓存恢复时，浏览器会自己滚回原位，我们不需要动
-  window.addEventListener('pageshow', function (e) {
-    if (e.persisted) restored = true; // bfcache 恢复，跳过我们的恢复
-  });
-
-  if (document.readyState === 'complete') {
-    tryRestore();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', restore);
   } else {
-    window.addEventListener('load', tryRestore);
+    restore();
   }
 })();
 
