@@ -358,7 +358,6 @@ nav.main-nav a:hover, nav.main-nav a.active {
 
 .post-card.featured h3 {
   font-size: 2rem;
-  max-width: 85%;
 }
 
 .post-card.featured h3,
@@ -371,7 +370,6 @@ nav.main-nav a:hover, nav.main-nav a.active {
 
 .post-card.featured .post-excerpt {
   font-size: 1rem;
-  max-width: 75%;
   line-height: 1.8;
 }
 
