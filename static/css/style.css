@@ -826,11 +826,13 @@ nav.main-nav a:hover, nav.main-nav a.active {
   gap: 0.5rem;
   justify-content: center;
   margin: 2rem 0 4rem;
+  flex-wrap: wrap;
 }
 
-.pagination a, .pagination span {
-  width: 36px;
+.pagination-btn {
+  min-width: 36px;
   height: 36px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -843,9 +845,48 @@ nav.main-nav a:hover, nav.main-nav a.active {
   transition: all 0.2s;
 }
 
-.pagination a:hover, .pagination span.current {
+.pagination-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.pagination-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255,77,0,0.1);
+}
+
+.pagination-btn.disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ── 归档列表 ── */
+.archive-link {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: color 0.2s;
+}
+
+.archive-link:hover { color: var(--accent); }
+
+.archive-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.archive-title {
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  color: var(--text);
 }
 
 /* ── 响应式 ── */

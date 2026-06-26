@@ -4,8 +4,8 @@
  * 用法: node build.mjs [--serve] [--prod]
  */
 
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync, existsSync } from 'fs';
-import { join, dirname, relative } from 'path';
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync, existsSync, statSync } from 'fs';
+import { join, dirname, relative, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { extname } from 'path';
@@ -141,6 +141,12 @@ function createEnv(autoescape = false) {
   env.addFilter('format', (v, fmt) => fmt.replace('%s', v));
   env.addFilter('default', (v, fallback) => (v === undefined || v === null || v === '') ? fallback : v);
   env.addFilter('string', v => String(v));
+  // range filter: {% for i in 1|range(10) %}  →  1..9
+  env.addFilter('range', (start, end) => {
+    const arr = [];
+    for (let i = Number(start); i <= Number(end); i++) arr.push(i);
+    return arr;
+  });
 
   return env;
 }
@@ -183,12 +189,37 @@ class BlogBuilder {
     console.log('✓ 静态文件已复制');
   }
 
+  // ── 递归扫描所有 MD 文件 ──
+  walkDir(dir, base = dir) {
+    const results = [];
+    if (!existsSync(dir)) return results;
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) {
+        results.push(...this.walkDir(full, base));
+      } else if (entry.endsWith('.md')) {
+        const rel = relative(base, full);
+        const folder = dirname(rel) === '.' ? '' : dirname(rel).replace(/\\/g, '/');
+        results.push({ path: full, folder });
+      }
+    }
+    return results;
+  }
+
   // ── 加载所有 MD 文章 ──
   loadPosts() {
-    const files = readdirSync(POSTS_DIR).filter(f => f.endsWith('.md')).sort().reverse();
+    const files = this.walkDir(POSTS_DIR).sort((a, b) => {
+      // 按文件名字母倒序，保证日期文件名靠前
+      return b.path.localeCompare(a.path);
+    });
     this.posts = files.map(f => {
-      const p = parsePost(join(POSTS_DIR, f));
+      const p = parsePost(f.path);
       p.url = `posts/${p.slug}.html`;
+      // 从文件夹名自动推断合集（若文章未显式声明）
+      if (!p.collection && f.folder) {
+        p.collection = f.folder;
+        p.collection_slug = f.folder.toLowerCase().replace(/\s+/g, '-');
+      }
       return p;
     });
     console.log(`✓ 加载了 ${this.posts.length} 篇文章`);
@@ -296,6 +327,7 @@ class BlogBuilder {
         description: meta.description || '',
         collection: colObj,
         posts: postsIn,
+        pagination: null,
       };
       this.renderPage('collection.html', ctx, join(colDir, `${slug}.html`), 1);
     }
@@ -352,33 +384,46 @@ class BlogBuilder {
     console.log('✓ 构建了首页');
   }
 
-  // ── 构建归档页 ──
+  // ── 构建归档页（分页版）──
   buildArchive() {
-    const byYear = {};
-    const allTags = new Set();
-    for (const p of this.posts) {
-      const yr = p.date.slice(0, 4);
-      if (!byYear[yr]) byYear[yr] = [];
-      byYear[yr].push(p);
-      p.tags.forEach(t => allTags.add(t));
+    const perPage = 20;
+    const totalPages = Math.ceil(this.posts.length / perPage) || 1;
+
+    for (let page = 1; page <= totalPages; page++) {
+      const start = (page - 1) * perPage;
+      const pagePosts = this.posts.slice(start, start + perPage);
+
+      // 按年份分组当前页
+      const byYear = {};
+      for (const p of pagePosts) {
+        const yr = p.date.slice(0, 4);
+        if (!byYear[yr]) byYear[yr] = [];
+        byYear[yr].push(p);
+      }
+
+      const firstYear = this.posts.length ? this.posts[this.posts.length - 1].date.slice(0, 4) : String(new Date().getFullYear());
+
+      const ctx = {
+        title: page === 1 ? '归档' : `归档 - 第 ${page} 页`,
+        description: '全部文章列表',
+        posts_by_year: byYear,
+        total_posts: this.posts.length,
+        first_year: firstYear,
+        pagination: {
+          current: page,
+          total: totalPages,
+          pages: Array.from({ length: totalPages }, (_, i) => i + 1),
+          has_prev: page > 1,
+          has_next: page < totalPages,
+          prev_url: page === 2 ? 'archive.html' : `archive-${page - 1}.html`,
+          next_url: `archive-${page + 1}.html`,
+        },
+      };
+
+      const outFile = page === 1 ? 'archive.html' : `archive-${page}.html`;
+      this.renderPage('archive.html', ctx, join(OUT_DIR, outFile));
     }
-
-    const sortedYears = Object.keys(byYear).sort((a, b) => b - a);
-    const postsByYear = {};
-    for (const yr of sortedYears) postsByYear[yr] = byYear[yr];
-
-    const firstYear = sortedYears.length ? sortedYears[sortedYears.length - 1] : String(new Date().getFullYear());
-
-    const ctx = {
-      title: '归档',
-      description: '全部文章列表',
-      posts_by_year: postsByYear,
-      all_tags: [...allTags].sort(),
-      total_posts: this.posts.length,
-      first_year: firstYear,
-    };
-    this.renderPage('archive.html', ctx, join(OUT_DIR, 'archive.html'));
-    console.log('✓ 构建了归档页');
+    console.log(`✓ 构建了归档页（共 ${totalPages} 页）`);
   }
 
   // ── 构建关于页 ──
@@ -409,6 +454,13 @@ class BlogBuilder {
     ];
     for (const p of this.posts) urls.push(`${siteUrl}/${p.url}`);
     for (const col of this.collectionsList) urls.push(`${siteUrl}/${col.url}`);
+
+    // 归档分页
+    const perPage = 20;
+    const totalPages = Math.ceil(this.posts.length / perPage) || 1;
+    for (let page = 2; page <= totalPages; page++) {
+      urls.push(`${siteUrl}/archive-${page}.html`);
+    }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
       urls.map(u => `  <url><loc>${u}</loc><changefreq>weekly</changefreq></url>`).join('\n') +
