@@ -1,0 +1,16 @@
+{
+  "name": "tian-blog",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "node build.mjs --serve",
+    "prod": "node build.mjs --prod"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1",
+    "js-yaml": "^5.1.0",
+    "marked": "^18.0.5",
+    "nunjucks": "^3.2.4"
+  }
+}

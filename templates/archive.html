@@ -27,7 +27,7 @@
   </div>
 
   <!-- 按年份分组 -->
-  {% for year, posts in posts_by_year.items() %}
+  {% for year, posts in posts_by_year %}
   <div style="margin-bottom:3rem;">
     <h2 style="font-family:'Space Grotesk',sans-serif;font-size:3rem;font-weight:900;color:transparent;-webkit-text-stroke:1px var(--border);margin-bottom:1.5rem;">{{ year }}</h2>
     <div style="display:flex;flex-direction:column;gap:0.6rem;">
@@ -35,7 +35,7 @@
       <a href="{{ post.url }}" style="display:flex;align-items:baseline;gap:1.5rem;text-decoration:none;color:inherit;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);transition:color 0.2s;"
          onmouseover="this.querySelector('.atitle').style.color='var(--accent)'"
          onmouseout="this.querySelector('.atitle').style.color='var(--text)'">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0;">{{ post.date[5:] }}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0;">{{ post.date_month_day }}</span>
         <span class="atitle" style="font-size:0.95rem;transition:color 0.2s;color:var(--text);">{{ post.title }}</span>
         {% if post.collection %}<span class="post-collection-badge" style="flex-shrink:0;">{{ post.collection }}</span>{% endif %}
       </a>

@@ -21,16 +21,16 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 安装 Python
-        uses: actions/setup-python@v5
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.13'
+          node-version: '22'
 
       - name: 安装依赖
-        run: pip install markdown PyYAML Jinja2
+        run: npm install --omit=dev
 
       - name: 构建站点
-        run: python build.py --prod
+        run: node build.mjs --prod
 
       - name: 配置 Pages
         uses: actions/configure-pages@v4

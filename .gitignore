@@ -1,15 +1,5 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-dist/
-*.egg
-
-# 虚拟环境
-venv/
-.venv/
-env/
+# Node.js
+node_modules/
 
 # 构建产物（由 CI 自动生成）
 output/

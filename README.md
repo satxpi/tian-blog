@@ -1,25 +1,25 @@
 # 老田的博客
 
-> 从小田变老田 — 个人静态博客，基于 Python + Jinja2 + Markdown 构建
+> 从小田变老田 — 个人静态博客，基于 Node.js + Nunjucks + Markdown 构建
 
 ## 快速开始
 
 ### 1. 安装依赖
 
 ```bash
-pip install -r requirements.txt
+npm install
 ```
 
 ### 2. 构建站点
 
 ```bash
-python build.py
+node build.mjs
 ```
 
 ### 3. 本地预览
 
 ```bash
-python build.py --serve
+node build.mjs --serve
 # 浏览器打开 http://localhost:8080/index.html
 ```
 
@@ -29,31 +29,31 @@ python build.py --serve
 
 ```
 tian-blog/
-├── build.py                 # 构建脚本（核心）
-├── config.yaml              # 站点配置（域名、AdSense ID 等）
-├── requirements.txt
+├── build.mjs               # 构建脚本（核心）
+├── config.yaml             # 站点配置（域名、AdSense ID 等）
+├── package.json
 │
 ├── content/
-│   ├── posts/               # 博客文章（Markdown）
+│   ├── posts/              # 博客文章（Markdown）
 │   │   └── YYYY-MM-DD-slug.md
-│   └── collections.yaml     # 合集定义
+│   └── collections.yaml    # 合集定义
 │
-├── templates/               # Jinja2 HTML 模板
-│   ├── base.html            # 公共布局（头尾、导航、Cookie 横幅）
-│   ├── index.html           # 首页
-│   ├── post.html            # 文章详情页
-│   ├── archive.html         # 归档页
-│   ├── collection.html      # 合集详情页
+├── templates/              # Nunjucks HTML 模板
+│   ├── base.html           # 公共布局（头尾、导航、Cookie 横幅）
+│   ├── index.html          # 首页
+│   ├── post.html           # 文章详情页
+│   ├── archive.html        # 归档页
+│   ├── collection.html     # 合集详情页
 │   ├── collections_index.html # 合集列表页
-│   ├── about.html           # 关于页
-│   └── privacy.html         # 隐私政策（Google AdSense 必需）
+│   ├── about.html          # 关于页
+│   └── privacy.html        # 隐私政策（Google AdSense 必需）
 │
 ├── static/
-│   ├── css/style.css        # 主样式
-│   ├── js/main.js           # 交互脚本
-│   └── images/              # 图片资源
+│   ├── css/style.css       # 主样式
+│   ├── js/main.js          # 交互脚本
+│   └── images/             # 图片资源
 │
-└── output/                  # 构建产物（部署此目录）
+└── output/                 # 构建产物（部署此目录）
 ```
 
 ---
@@ -115,22 +115,13 @@ collections:
 
 ## 部署
 
-构建完成后，将 `output/` 目录部署到：
+推送 `main` 分支到 GitHub，GitHub Actions 会自动构建并部署到 GitHub Pages。
 
-- **GitHub Pages** — 推送到 `gh-pages` 分支
-- **Vercel / Netlify** — 连接仓库，构建命令 `python build.py`，输出目录 `output`
+如需手动部署，构建后将 `output/` 目录部署到任意静态托管：
+- **GitHub Pages** — 自动（push 即部署）
+- **Vercel / Netlify** — 连接仓库，构建命令 `node build.mjs --prod`，输出目录 `output`
 - **Cloudflare Pages** — 同上
 - **任意静态托管** — 上传 `output/` 目录
-
----
-
-## 自定义域名 & AdSense
-
-部署后：
-1. 在 `config.yaml` 中填写正式域名
-2. 重新 `python build.py` 生成带正确 canonical URL 的站点
-3. 在 Google Search Console 验证域名所有权
-4. 在 AdSense 后台添加站点，等待审核
 
 ---
 

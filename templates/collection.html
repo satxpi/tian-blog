@@ -28,10 +28,10 @@
     <a href="{{ post.url }}" style="display:grid;grid-template-columns:3rem 1fr auto;gap:1rem;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:1.25rem 1.5rem;text-decoration:none;color:inherit;transition:border-color 0.2s,transform 0.2s;"
        onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-1px)'"
        onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
-      <span style="font-size:1.8rem;font-weight:900;color:var(--accent);opacity:0.25;font-family:'Space Grotesk',sans-serif;line-height:1;">{{ loop.index|string|zfill(2) }}</span>
+      <span style="font-size:1.8rem;font-weight:900;color:var(--accent);opacity:0.25;font-family:'Space Grotesk',sans-serif;line-height:1;">{{ loop.index | pad(2, '0') }}</span>
       <div>
         <h3 style="font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:700;margin-bottom:0.3rem;">{{ post.title }}</h3>
-        <p style="font-size:0.83rem;color:var(--text-muted);">{{ post.excerpt[:80] }}…</p>
+        <p style="font-size:0.83rem;color:var(--text-muted);">{{ post.excerpt | slice(0, 80) }}…</p>
       </div>
       <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);white-space:nowrap;">{{ post.date }}</span>
     </a>
