@@ -602,7 +602,7 @@ nav.main-nav a:hover, nav.main-nav a.active {
   margin: 1.5rem 0;
   font-size: 0.9rem;
   table-layout: auto;
-  border: 1px solid #444;
+  border: 1px solid #5a5a5a;
 }
 
 .article-body thead {
@@ -616,13 +616,13 @@ nav.main-nav a:hover, nav.main-nav a.active {
   font-size: 0.85rem;
   color: var(--text);
   white-space: nowrap;
-  background: rgba(255,77,0,0.04);
-  border: 1px solid #444;
+  background: rgba(255,77,0,0.06);
+  border: 1px solid #5a5a5a;
 }
 
 .article-body td {
   padding: 0.6rem 1rem;
-  border: 1px solid #3a3a3a;
+  border: 1px solid #4a4a4a;
   color: var(--text-muted);
   vertical-align: middle;
   word-break: break-all;
