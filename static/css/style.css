@@ -602,6 +602,7 @@ nav.main-nav a:hover, nav.main-nav a.active {
   margin: 1.5rem 0;
   font-size: 0.9rem;
   table-layout: auto;
+  border: 1px solid #444;
 }
 
 .article-body thead {
@@ -616,11 +617,12 @@ nav.main-nav a:hover, nav.main-nav a.active {
   color: var(--text);
   white-space: nowrap;
   background: rgba(255,77,0,0.04);
+  border: 1px solid #444;
 }
 
 .article-body td {
   padding: 0.6rem 1rem;
-  border-bottom: 1px solid var(--border);
+  border: 1px solid #3a3a3a;
   color: var(--text-muted);
   vertical-align: middle;
   word-break: break-all;
