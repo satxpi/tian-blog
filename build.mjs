@@ -191,6 +191,7 @@ class BlogBuilder {
     this.domain  = this.config.domain || '';
     this.posts   = [];
     this.collectionsList = [];
+    this.buildTs = Date.now();
   }
 
   // ── 清理 & 复制静态文件 ──
@@ -293,6 +294,7 @@ class BlogBuilder {
       root_url: rootUrl,
       canonical_url: canonical,
       year: new Date().getFullYear(),
+      build_ts: this.buildTs,
     });
 
     const dir = dirname(outPath);
@@ -535,6 +537,17 @@ class BlogBuilder {
     }, join(OUT_DIR, 'privacy.html'));
   }
 
+  // ── 构建免责声明页 ──
+  buildDisclaimer() {
+    const now = new Date();
+    const lastUpdated = `${now.getFullYear()} 年 ${String(now.getMonth() + 1).padStart(2, '0')} 月 ${String(now.getDate()).padStart(2, '0')} 日`;
+    this.renderPage('disclaimer.html', {
+      title: '免责声明',
+      description: '老田博客免责声明',
+      last_updated: lastUpdated,
+    }, join(OUT_DIR, 'disclaimer.html'));
+  }
+
   // ── 搜索索引 JSON ──
   buildSearchIndex() {
     const siteUrl = (this.config.site_url || '').replace(/\/$/, '');
@@ -559,6 +572,7 @@ class BlogBuilder {
     const urls = [
       `${siteUrl}/index.html`, `${siteUrl}/archive.html`,
       `${siteUrl}/collections.html`, `${siteUrl}/about.html`,
+      `${siteUrl}/privacy.html`, `${siteUrl}/disclaimer.html`,
     ];
     for (const p of this.posts) urls.push(`${siteUrl}/${p.url}`);
     for (const col of this.collectionsList) urls.push(`${siteUrl}/${col.url}`);
@@ -604,6 +618,7 @@ class BlogBuilder {
     this.buildArchive();
     this.buildAbout();
     this.buildPrivacy();
+    this.buildDisclaimer();
     this.buildSearchIndex();
     this.buildSitemap();
     this.buildRobots();
