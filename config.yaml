@@ -1,0 +1,14 @@
+# 站点基础配置
+site_name:   "老田的博客"
+site_url:    "https://satxpi.github.io/tian-blog"   # GitHub Pages 地址
+base_url:    "/tian-blog/"                           # GitHub Pages 子目录前缀
+description: "从小田变老田，一个普通人的成长账本"
+author:      "老田"
+language:    "zh-CN"
+
+# Google AdSense
+# 替换为你的真实 Publisher ID（格式：ca-pub-XXXXXXXXXXXXXXXX）
+adsense_publisher_id: "ca-pub-XXXXXXXXXXXXXXXX"
+
+# 每页文章数
+posts_per_page: 10

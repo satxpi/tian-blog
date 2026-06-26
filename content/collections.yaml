@@ -1,0 +1,30 @@
+# 合集配置
+# name 必须与文章 Front Matter 中的 collection 字段保持一致
+collections:
+  - slug:        chengzhang
+    name:        成长这件事
+    icon:        🌱
+    description: >
+      从青涩到成熟，记录那些让人皱眉、让人发笑、
+      让人后来感谢的成长时刻。
+
+  - slug:        code-life
+    name:        代码人生
+    icon:        💻
+    description: >
+      技术折腾、踩坑记录、工具分享。
+      写给自己，也写给同路人。
+
+  - slug:        road-trip
+    name:        在路上
+    icon:        🚂
+    description: >
+      旅行不是逃避，是换个角度看自己。
+      用脚步丈量过的地方，都记在这里。
+
+  - slug:        reading-notes
+    name:        读书这件小事
+    icon:        📖
+    description: >
+      读过的书，留下的思考。
+      不写书评，只写触动了自己的那部分。

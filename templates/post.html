@@ -1,0 +1,103 @@
+<!-- ══ 单篇文章模板 ══ -->
+<div class="article-layout">
+
+  <!-- 正文 -->
+  <article>
+    <header class="article-header">
+      <div class="post-meta">
+        {% if post.collection %}<a href="../collections/{{ post.collection_slug }}.html" class="post-collection-badge">📚 {{ post.collection }}</a>{% endif %}
+        {% for tag in post.tags %}<span class="post-tag">{{ tag }}</span>{% endfor %}
+      </div>
+      <h1>{{ post.title }}</h1>
+      <div class="article-info">
+        <span>{{ post.date }}</span>
+        <span class="divider">·</span>
+        <span>约 {{ post.read_time }} 分钟阅读</span>
+        {% if post.author %}<span class="divider">·</span><span>{{ post.author }}</span>{% endif %}
+      </div>
+    </header>
+
+    <!-- 文章内广告（顶部） -->
+    <div class="ad-unit ad-unit-inline">
+      <ins class="adsbygoogle"
+           style="display:block;text-align:center"
+           data-ad-layout="in-article"
+           data-ad-format="fluid"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="XXXXXXXXXX"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div class="article-body">
+      {{ post.content_html }}
+    </div>
+
+    <!-- 文章内广告（底部） -->
+    <div class="ad-unit ad-unit-inline">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="XXXXXXXXXX"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- 上下篇导航 -->
+    <nav class="post-nav" style="display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      {% if prev_post %}
+      <a href="{{ prev_post.url }}" style="text-decoration:none;color:var(--text-muted);font-size:0.85rem;flex:1;">
+        ← {{ prev_post.title }}
+      </a>
+      {% else %}<span></span>{% endif %}
+      {% if next_post %}
+      <a href="{{ next_post.url }}" style="text-decoration:none;color:var(--text-muted);font-size:0.85rem;flex:1;text-align:right;">
+        {{ next_post.title }} →
+      </a>
+      {% endif %}
+    </nav>
+  </article>
+
+  <!-- 侧边栏 -->
+  <aside class="article-sidebar">
+
+    <!-- 目录 -->
+    {% if toc %}
+    <div class="sidebar-widget">
+      <h4>目录</h4>
+      <ul class="toc-list">
+        {{ toc }}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- 侧边广告 -->
+    <div class="ad-unit ad-unit-rect">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="XXXXXXXXXX"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- 合集内文章列表 -->
+    {% if collection_posts %}
+    <div class="sidebar-widget">
+      <h4>合集：{{ post.collection }}</h4>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
+        {% for cp in collection_posts %}
+        <li>
+          <a href="{{ cp.url }}" style="font-size:0.83rem;color:{% if cp.slug == post.slug %}var(--accent){% else %}var(--text-muted){% endif %};text-decoration:none;">
+            {{ loop.index }}. {{ cp.title }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+  </aside>
+
+</div>
