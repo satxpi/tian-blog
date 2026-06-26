@@ -6,15 +6,12 @@
     "build": "node build.mjs",
     "serve": "node build.mjs --serve",
     "prod": "node build.mjs --prod",
-    "admin": "node server.mjs",
-    "dev": "node build.mjs && node server.mjs"
+    "dev": "node build.mjs --serve"
   },
   "dependencies": {
-    "express": "^5.2.1",
     "highlight.js": "^11.11.1",
     "js-yaml": "^5.1.0",
     "marked": "^18.0.5",
-    "multer": "^2.2.0",
     "nunjucks": "^3.2.4"
   }
 }
