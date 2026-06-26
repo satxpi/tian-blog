@@ -86,59 +86,68 @@
 
 // ── 断续阅读：记住文章阅读位置 ──
 (function () {
-  const articleBody = document.querySelector('.article-body');
-  if (!articleBody) return; // 只在文章页执行
+  var articleBody = document.querySelector('.article-body');
+  if (!articleBody) return;
 
-  // 用文章 slug 作为 key
-  const pathParts = location.pathname.replace(/\/$/, '').split('/');
-  const slug = pathParts[pathParts.length - 1].replace('.html', '');
+  var pathParts = location.pathname.replace(/\/$/, '').split('/');
+  var slug = pathParts[pathParts.length - 1].replace('.html', '');
   if (!slug) return;
-  const key = `read_pos_${slug}`;
+  var key = 'read_pos_' + slug;
 
-  // ── 保存位置 ──
-  let saveTimer;
-  function save() {
-    const y = window.scrollY;
-    if (y < 80) return; // 接近顶部不存
+  // ── 保存：滚动节流 200ms ──
+  var saveTimer;
+  function flushSave() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      localStorage.setItem(key, String(y));
-    }, 500);
-  }
-  window.addEventListener('scroll', save, { passive: true });
-
-  // 点击任何链接离开前保存
-  document.addEventListener('click', function onLink(e) {
-    const a = e.target.closest('a');
-    if (a && a.href && !a.href.startsWith('#')) {
-      const y = window.scrollY;
-      if (y > 80) localStorage.setItem(key, String(y));
+    var y = window.scrollY || window.pageYOffset;
+    if (y > 60) {
+      try { localStorage.setItem(key, String(y)); } catch (e) {}
     }
-  }, true); // capture phase，确保在导航前执行
+  }
+  function onScroll() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flushSave, 200);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
 
-  // ── 恢复位置（等页面完全加载后再滚）──
-  const savedY = parseInt(localStorage.getItem(key), 10);
-  if (!savedY || savedY < 100) return;
+  // 页面隐藏 / 卸载时保存（覆盖浏览器后退、关闭标签页等场景）
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) flushSave();
+  });
+  window.addEventListener('pagehide', flushSave);
+  window.addEventListener('beforeunload', flushSave);
 
-  let restored = false;
+  // ── 恢复：多次重试，直到页面足够高或放弃 ──
+  var savedY = parseInt(localStorage.getItem(key), 10);
+  if (!savedY || savedY < 60) return;
+
+  var restored = false;
+  var retries = 0;
   function tryRestore() {
     if (restored) return;
-    const maxY = document.body.scrollHeight - window.innerHeight;
-    if (maxY < savedY) return; // 页面还不够高，再等
+    retries++;
+    var maxY = document.body.scrollHeight - window.innerHeight;
+    if (maxY < savedY - 50) {
+      if (retries < 6) setTimeout(tryRestore, 300); // 高度还不够，等
+      return;
+    }
     restored = true;
-    window.scrollTo({ top: Math.min(savedY, maxY), behavior: 'instant' });
+    var target = Math.min(savedY, maxY);
+    // 用 requestAnimationFrame 确保在渲染帧执行
+    requestAnimationFrame(function () {
+      window.scrollTo({ top: target, behavior: 'instant' });
+    });
   }
 
-  // 页面 load 事件触发后尝试恢复（图片/font 已加载）
+  // 处理 bfcache：页面从缓存恢复时，浏览器会自己滚回原位，我们不需要动
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) restored = true; // bfcache 恢复，跳过我们的恢复
+  });
+
   if (document.readyState === 'complete') {
     tryRestore();
   } else {
     window.addEventListener('load', tryRestore);
   }
-  // 兜底：300ms 后再试一次
-  setTimeout(() => {
-    if (!restored) tryRestore();
-  }, 500);
 })();
 
 // ── 导航当前页高亮 ──
