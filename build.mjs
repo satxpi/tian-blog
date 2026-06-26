@@ -41,6 +41,12 @@ renderer.code = function({ text, lang }) {
   }
   return `<pre><code>${text}</code></pre>`;
 };
+renderer.link = function({ href, title, text }) {
+  const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));
+  const attrs = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
+  const titleAttr = title ? ` title="${title}"` : '';
+  return `<a href="${href}"${titleAttr}${attrs}>${text}</a>`;
+};
 marked.use({ renderer });
 
 // ─── 辅助函数 ─────────────────────────────────────────
