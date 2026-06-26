@@ -93,47 +93,6 @@ collections:
     description: 合集描述文字
 ```
 
----
-
-## 配置 Google AdSense
-
-1. 申请 Google AdSense 账号并获得审核通过
-2. 修改 `config.yaml` 中的 `adsense_publisher_id`
-3. 全局替换所有模板文件中的 `ca-pub-XXXXXXXXXXXXXXXX` 为你的真实 ID
-4. 全局替换广告位中的 `data-ad-slot="XXXXXXXXXX"` 为你的广告单元 ID
-
-### AdSense 合规要求
-
-本项目已内置：
-- ✅ 隐私政策页面 (`privacy.html`)
-- ✅ Cookie 同意横幅（首次访问弹出）
-- ✅ `robots.txt` 和 `sitemap.xml` 自动生成
-- ✅ 广告旁边无违禁内容
-- ✅ `<meta name="robots" content="index, follow">` 确保内容可索引
-
----
-
-## 部署
-
-构建完成后，将 `output/` 目录部署到：
-
-- **GitHub Pages** — 推送到 `gh-pages` 分支
-- **Vercel / Netlify** — 连接仓库，构建命令 `python build.py`，输出目录 `output`
-- **Cloudflare Pages** — 同上
-- **任意静态托管** — 上传 `output/` 目录
-
----
-
-## 自定义域名 & AdSense
-
-部署后：
-1. 在 `config.yaml` 中填写正式域名
-2. 重新 `python build.py` 生成带正确 canonical URL 的站点
-3. 在 Google Search Console 验证域名所有权
-4. 在 AdSense 后台添加站点，等待审核
-
----
-
 ## License
 
 MIT — 随便用，欢迎改
