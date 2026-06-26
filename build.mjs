@@ -339,9 +339,6 @@ class BlogBuilder {
         colMap[p.collection].push(p);
       }
     }
-    for (const key of Object.keys(colMap)) {
-      colMap[key].sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
-    }
 
     this.collectionsList = [];
 
