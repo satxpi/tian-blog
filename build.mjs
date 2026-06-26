@@ -168,6 +168,7 @@ class BlogBuilder {
     this.env     = createEnv();
     this.collectionsMeta = loadCollections();
     this.baseUrl = this.config.base_url || '/';
+    this.domain  = this.config.domain || '';
     this.posts   = [];
     this.collectionsList = [];
   }
@@ -424,6 +425,11 @@ class BlogBuilder {
     // 禁止 GitHub Pages 用 Jekyll 处理
     writeFileSync(join(OUT_DIR, '.nojekyll'), '');
     console.log('✓ 生成 .nojekyll');
+    // CNAME 自定义域名
+    if (this.domain) {
+      writeFileSync(join(OUT_DIR, 'CNAME'), this.domain + '\n', 'utf8');
+      console.log(`✓ 生成 CNAME → ${this.domain}`);
+    }
   }
 
   // ── 全量构建 ──

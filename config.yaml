@@ -1,7 +1,8 @@
 # 站点基础配置
 site_name:   "老田的博客"
-site_url:    "https://satxpi.github.io/tian-blog"   # GitHub Pages 地址
-base_url:    "/tian-blog/"                           # GitHub Pages 子目录前缀
+site_url:    "https://gamesite.top"                     # 你的域名
+base_url:    "/"                                      # 自定义域名用根路径
+domain:      "gamesite.top"                           # CNAME 记录
 description: "从小田变老田，一个普通人的成长账本"
 author:      "老田"
 language:    "zh-CN"
