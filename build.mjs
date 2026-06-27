@@ -262,9 +262,9 @@ class BlogBuilder {
     this.posts.sort((a, b) => {
       const dateCmp = String(b.date_sort).localeCompare(String(a.date_sort));
       if (dateCmp !== 0) return dateCmp;
-      // 同一天 → 按 sequence 升序（有 sequence 的排在前面）
+      // 同一天 → 按 sequence 降序（最新的序号大，排最前面）
       const sa = a.sequence, sb = b.sequence;
-      if (sa !== null && sb !== null) return sa - sb;
+      if (sa !== null && sb !== null) return sb - sa;
       if (sa !== null) return -1;
       if (sb !== null) return 1;
       // 都没有 sequence → slug 字母序兜底
