@@ -258,11 +258,16 @@ class BlogBuilder {
       }
     }
 
-    // 排序：主键 date_sort（含时间的完整戳），次键 slug（同一天内按文件名/slug 排序）
+    // 排序：主键 date_sort（含时间的完整戳，精确到时分秒），次键 sequence（合集内序号），最后 slug
     this.posts.sort((a, b) => {
       const dateCmp = String(b.date_sort).localeCompare(String(a.date_sort));
       if (dateCmp !== 0) return dateCmp;
-      // 同时间 → slug 字母序兜底
+      // 同一天 → 按 sequence 升序（有 sequence 的排在前面）
+      const sa = a.sequence, sb = b.sequence;
+      if (sa !== null && sb !== null) return sa - sb;
+      if (sa !== null) return -1;
+      if (sb !== null) return 1;
+      // 都没有 sequence → slug 字母序兜底
       return String(a.slug).localeCompare(String(b.slug));
     });
     console.log(`✓ 加载了 ${this.posts.length} 篇文章`);
