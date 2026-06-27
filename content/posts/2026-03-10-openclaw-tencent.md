@@ -1,5 +1,5 @@
 ---
-title: "小龙虾"出圈了：腾讯一键部署，OpenClaw从极客玩具变成大众工具
+title: '小龙虾出圈了：腾讯一键部署，OpenClaw从极客玩具变成大众工具'
 date: 2026-03-10
 featured: true
 tags: [AI, Agent, OpenClaw, 腾讯]

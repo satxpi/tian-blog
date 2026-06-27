@@ -76,10 +76,21 @@ function parsePost(filePath) {
 
   const fname  = filePath.split(/[\\/]/).pop().replace(/\.md$/, '');
   const slug   = meta.slug || fname;
-  // dateSort：完整时间戳用于排序（支持 date: "2024-06-15 10:30" 或 "2024-06-15T10:30:00"）
-  const dateSort = meta.date
-    ? String(meta.date).replace(' ', 'T')  // 统一为 ISO 格式方便排序
-    : '1970-01-01T00:00:00';
+  // dateSort：完整时间戳用于排序
+  // js-yaml 会把 "2026-03-10" 解析成 Date 对象，需转换回 YYYY-MM-DD
+  let dateSort;
+  if (meta.date) {
+    if (meta.date instanceof Date) {
+      const y = meta.date.getFullYear();
+      const m = String(meta.date.getMonth() + 1).padStart(2, '0');
+      const d = String(meta.date.getDate()).padStart(2, '0');
+      dateSort = `${y}-${m}-${d}T00:00:00`;
+    } else {
+      dateSort = String(meta.date).replace(' ', 'T');
+    }
+  } else {
+    dateSort = `${THIS_YEAR}-01-01T00:00:00`;  // 无日期默认当年1月1日
+  }
   const dateStr = dateSort.slice(0, 10);
   let tags = meta.tags || [];
   if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
