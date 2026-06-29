@@ -84,35 +84,57 @@
   });
 })();
 
-// ── 断续阅读：记住阅读位置 ──
+// ── 断续阅读：记住阅读位置（保留最深位置，3天时效） ──
 (function () {
   if (!document.querySelector('.article-body')) return;
   var slug = location.pathname.split('/').pop().replace('.html', '');
   if (!slug) return;
   var key = 'read_pos_' + slug;
+  var TTL = 3 * 24 * 60 * 60 * 1000; // 3 天 ms
+
+  // 读取存储：返回 {y, ts} 或 null
+  function loadRecord() {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return null;
+      var rec = JSON.parse(raw);
+      // 兼容旧版（纯数字字符串）
+      if (typeof rec === 'number') return { y: rec, ts: Date.now() };
+      if (rec && rec.y && rec.ts) return rec;
+    } catch (e) {}
+    return null;
+  }
+
+  // 保存：只在新位置 > 已保存位置时才覆盖（保留最深处），同时刷新时间戳
+  function savePos(y) {
+    if (y <= 40) return;
+    var rec = loadRecord();
+    if (!rec || y > rec.y) {
+      localStorage.setItem(key, JSON.stringify({ y: y, ts: Date.now() }));
+    }
+  }
 
   // ── 保存 ──
   var timer;
   window.addEventListener('scroll', function () {
     clearTimeout(timer);
-    timer = setTimeout(function () {
-      var y = window.scrollY;
-      if (y > 40) localStorage.setItem(key, y);
-    }, 300);
+    timer = setTimeout(function () { savePos(window.scrollY); }, 300);
   }, { passive: true });
 
-  // 离开页面前保存（覆盖点链接、后退、关标签页所有场景）
-  window.addEventListener('pagehide', function () {
-    var y = window.scrollY;
-    if (y > 40) localStorage.setItem(key, y);
-  });
+  // 离开页面前保存
+  window.addEventListener('pagehide', function () { savePos(window.scrollY); });
 
-  // ── 恢复：等页面完全加载后滚 ──
-  var savedY = parseInt(localStorage.getItem(key), 10);
-  if (!savedY || savedY < 40) return;
+  // ── 恢复：检查时效 ──
+  var rec = loadRecord();
+  if (!rec || rec.y < 40) return;
+  // 超过 3 天则清除，不恢复
+  if (Date.now() - rec.ts > TTL) {
+    localStorage.removeItem(key);
+    return;
+  }
 
   window.addEventListener('load', function () {
-    window.scrollTo(0, savedY);
+    window.scrollTo(0, rec.y);
   });
 })();
 
