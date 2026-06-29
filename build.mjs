@@ -86,7 +86,7 @@ function parsePost(filePath) {
       const d = String(meta.date.getDate()).padStart(2, '0');
       dateSort = `${y}-${m}-${d}T00:00:00`;
     } else {
-      dateSort = String(meta.date).replace(' ', 'T');
+      dateSort = String(meta.date).replace(' ', 'T').replace(/[+-]\d{2}:\d{2}$/, '');
     }
   } else {
     dateSort = `${THIS_YEAR}-01-01T00:00:00`;  // 无日期默认当年1月1日
