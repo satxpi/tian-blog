@@ -84,7 +84,7 @@
   });
 })();
 
-// ── 断续阅读：记住阅读位置（保留最深位置，3天时效） ──
+// ── 断续阅读：记住阅读位置（保留最后一次离开的位置，3天时效） ──
 (function () {
   if (!document.querySelector('.article-body')) return;
   var slug = location.pathname.split('/').pop().replace('.html', '');
@@ -100,28 +100,25 @@
       var rec = JSON.parse(raw);
       // 兼容旧版（纯数字字符串）
       if (typeof rec === 'number') return { y: rec, ts: Date.now() };
-      if (rec && rec.y && rec.ts) return rec;
+      if (rec && typeof rec.y === 'number' && rec.ts) return rec;
     } catch (e) {}
     return null;
   }
 
-  // 保存：只在新位置 > 已保存位置时才覆盖（保留最深处），同时刷新时间戳
+  // 保存：无条件覆盖为当前位置（保留最后一次），超过顶部才保存
   function savePos(y) {
     if (y <= 40) return;
-    var rec = loadRecord();
-    if (!rec || y > rec.y) {
-      localStorage.setItem(key, JSON.stringify({ y: y, ts: Date.now() }));
-    }
+    localStorage.setItem(key, JSON.stringify({ y: y, ts: Date.now() }));
   }
 
-  // ── 保存 ──
+  // ── 滚动时持续更新 ──
   var timer;
   window.addEventListener('scroll', function () {
     clearTimeout(timer);
     timer = setTimeout(function () { savePos(window.scrollY); }, 300);
   }, { passive: true });
 
-  // 离开页面前保存
+  // 离开页面前最后保存一次
   window.addEventListener('pagehide', function () { savePos(window.scrollY); });
 
   // ── 恢复：检查时效 ──
