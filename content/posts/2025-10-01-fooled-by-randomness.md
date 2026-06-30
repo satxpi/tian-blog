@@ -3,7 +3,7 @@ title: 读《随机漫步的傻瓜》：运气比你想的重要得多
 date: 2025-10-01
 slug: 2025-10-01-fooled-by-randomness
 tags: [读书, 成长]
-collection: 成长这件事
+collection: 读书这件小事
 excerpt: 那些你以为靠实力赚到的钱，可能只是运气好到还没被随机性惩罚。
 author: 老田
 ---

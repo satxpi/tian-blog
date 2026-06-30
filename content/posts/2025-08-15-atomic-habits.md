@@ -3,7 +3,7 @@ title: 读《原子习惯》：每天进步1%的复利效应
 date: 2025-08-15
 slug: 2025-08-15-atomic-habits
 tags: [读书, 成长]
-collection: 成长这件事
+collection: 读书这件小事
 excerpt: 你以为改变需要大决心，其实只需要每天做好一件小事。
 author: 老田
 ---
