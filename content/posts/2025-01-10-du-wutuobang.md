@@ -3,7 +3,7 @@ title: 读《乌合之众》：为什么我们都会被带着跑
 date: 2025-01-10
 slug: du-wutuobang
 tags: [读书, 社会学, 心理]
-collection: 读书这件小事
+collection: 成长这件事
 excerpt: 勒庞1895年写的书，读起来像在分析今天的互联网舆论。这本书让我开始审视自己——我是那个带着跑的人吗？
 author: 老田
 ---
