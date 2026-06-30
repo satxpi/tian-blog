@@ -620,6 +620,9 @@ class BlogBuilder {
       writeFileSync(join(OUT_DIR, 'CNAME'), this.domain + '\n', 'utf8');
       console.log(`✓ 生成 CNAME → ${this.domain}`);
     }
+    // Google AdSense ads.txt
+    writeFileSync(join(OUT_DIR, 'ads.txt'), 'google.com, pub-5295418842606224, DIRECT, f08c47fec0942fa0\n', 'utf8');
+    console.log('✓ 生成 ads.txt');
   }
 
   // ── 全量构建 ──
