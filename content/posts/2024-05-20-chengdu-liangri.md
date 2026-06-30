@@ -3,7 +3,7 @@ title: 成都两日：我在那里丢掉了一些东西
 date: 2024-05-20
 slug: chengdu-liangri
 tags: [旅行, 成都, 生活]
-collection: 成长这件事
+collection: 在路上
 excerpt: 去成都之前，我已经一年没有出门了。不是没钱，不是没时间，是没有动力。成都给了我什么，我说不清楚，但我知道我把什么留在那里了。
 author: 老田
 ---
