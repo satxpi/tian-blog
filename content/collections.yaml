@@ -25,6 +25,12 @@ collections:
       读过的书，留下的思考。
       不写书评，只写触动了自己的那部分。
 
+  - slug:        历史人物
+    name:        历史人物
+    description: >
+      每天一个历史人物，不限于王侯将相。
+      有些人的故事，值得在今天重新讲一遍。
+
   - slug:        闲聊易经
     name:        闲聊易经
     description: >
