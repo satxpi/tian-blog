@@ -1,0 +1,53 @@
+<!-- ══ 归档页模板（分页版） ══ -->
+<div class="container" style="padding-top:3rem;padding-bottom:4rem;">
+
+  <div style="margin-bottom:2rem;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--accent);letter-spacing:4px;margin-bottom:1rem;">ARCHIVE</div>
+    <h1 style="font-family:'Noto Serif SC',serif;font-size:2.5rem;font-weight:900;">全部文章</h1>
+    <p style="color:var(--text-muted);margin-top:0.5rem;">共 {{ total_posts }} 篇，从 {{ first_year }} 年写到现在。</p>
+  </div>
+
+  <!-- 按年份分组 -->
+  {% for year, posts in posts_by_year %}
+  <div style="margin-bottom:2.5rem;">
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:2.5rem;font-weight:900;color:rgba(255,255,255,0.08);margin-bottom:1rem;">{{ year }}</h2>
+    <div style="display:flex;flex-direction:column;gap:0.4rem;">
+      {% for post in posts %}
+      <a href="{{ post.url }}" class="archive-link">
+        <span class="archive-date">{{ post.date_display }}</span>
+        <span class="archive-title">{{ post.title }}</span>
+        {% if post.collection %}<span class="post-collection-badge" style="flex-shrink:0;">{{ post.collection }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- 分页导航 -->
+  {% if pagination and pagination.total > 1 %}
+  <nav class="pagination" style="margin-top:3rem;display:flex;justify-content:center;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+    {% if pagination.has_prev %}
+    <a href="{{ pagination.prev_url }}" class="pagination-btn">← 上一页</a>
+    {% else %}
+    <span class="pagination-btn disabled">← 上一页</span>
+    {% endif %}
+
+    {% for i in pagination.pages %}
+      {% if i == pagination.current %}
+      <span class="pagination-btn active">{{ i }}</span>
+      {% elif i == 1 %}
+      <a href="archive.html" class="pagination-btn">{{ i }}</a>
+      {% else %}
+      <a href="archive-{{ i }}.html" class="pagination-btn">{{ i }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+    <a href="{{ pagination.next_url }}" class="pagination-btn">下一页 →</a>
+    {% else %}
+    <span class="pagination-btn disabled">下一页 →</span>
+    {% endif %}
+  </nav>
+  {% endif %}
+
+</div>

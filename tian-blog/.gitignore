@@ -1,0 +1,17 @@
+# Node.js
+node_modules/
+
+# 构建产物（由 CI 自动生成）
+output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+

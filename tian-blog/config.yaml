@@ -1,0 +1,20 @@
+# 站点基础配置
+site_name:   "老田的博客"
+site_url:    "https://gamesite.top"                     # 你的域名
+base_url:    "/"                                      # 自定义域名用根路径
+domain:      "gamesite.top"                           # CNAME 记录
+description: "从小田变老田，一个普通人的成长账本"
+author:      "老田"
+language:    "zh-CN"
+
+# Google AdSense
+# 替换为你的真实 Publisher ID（格式：ca-pub-XXXXXXXXXXXXXXXX）
+adsense_publisher_id: "ca-pub-XXXXXXXXXXXXXXXX"
+
+# 每页文章数
+posts_per_page: 10
+
+# 是否从文件夹名自动推断合集（默认 true）
+# true  = 文章放在 "读书笔记/" 文件夹 → 自动归入「读书笔记」合集
+# false = 只有 Front Matter 显式写 collection: 才归入合集
+auto_collection: true
