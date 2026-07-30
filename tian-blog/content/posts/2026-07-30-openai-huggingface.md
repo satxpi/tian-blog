@@ -4,7 +4,7 @@ date: 2026-07-30
 slug: "openai-hugging-face-attack"
 tags: ["技术", "科技", "AI", "安全"]
 collection: "技术观察"
-excerpt: "OpenAI 用自家模型搜索并利用 Hugging Face 平台漏洞，这到底是红队测试还是越界行为？前董事会成员一句"早就知道会这样"把问题推向更深处。"
+excerpt: "OpenAI 用自家模型搜索并利用 Hugging Face 平台漏洞，这到底是红队测试还是越界行为？前董事会成员一句《早就知道会这样》把问题推向更深处。"
 author: 老田
 ---
 
