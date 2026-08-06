@@ -81,14 +81,18 @@ def parse_blog_md(path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--date', default=None)
+    ap.add_argument('--file', default=None, help='指定文章文件路径(优先级高于--date)')
     a = ap.parse_args()
 
-    target = a.date or time.strftime('%Y-%m-%d')
-    files = sorted(glob.glob(os.path.join(BLOG_POSTS, '*', f'{target}-*.md')))
-    if not files:
-        print(f'❌ {target} 没有博客文章')
-        return
-    path = files[-1]  # 最新一篇
+    if a.file:
+        path = a.file
+    else:
+        target = a.date or time.strftime('%Y-%m-%d')
+        files = sorted(glob.glob(os.path.join(BLOG_POSTS, '*', f'{target}-*.md')))
+        if not files:
+            print(f'❌ {target} 没有博客文章')
+            return
+        path = files[-1]  # 最新一篇
     title, body = parse_blog_md(path)
     print(f'📄 文章: {os.path.basename(path)}')
     print(f'   标题: {title}, 正文 {len(body)} 字符')
