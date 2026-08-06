@@ -128,7 +128,7 @@ def main():
         if font:
             short_title = title[:14] + ('…' if len(title) > 14 else '')
             draw.text((60, 140), short_title, fill=(255, 255, 255), font=font)
-            draw.text((60, 300), '老田 · 每日一文', fill=(220, 220, 255), font=font_small)
+            draw.text((60, 300), '生活与简单 · 每日一文', fill=(220, 220, 255), font=font_small)
         cover_path = '/tmp/wechat_cover.jpg'
         img.save(cover_path, 'JPEG', quality=90)
         up = requests.post(
