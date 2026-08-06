@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""
+wechat_draft_from_blog.py — 把当天博客文章发为公众号草稿
+
+读 content/posts/*/YYYY-MM-DD-*.md (最新一篇) → markdown 转 HTML → 公众号 draft/add
+用法: sudo python3 scripts/wechat_draft_from_blog.py [--date 2026-08-06]
+"""
+import os, sys, re, glob, argparse, time, html
+import requests
+
+APPID = "wx4d76a79c84e3ebbc"
+SECRET = "72d4248a0d0384384884116ff2470e06"
+BLOG_POSTS = '/data/tian-blog/tian-blog/content/posts'
+AUTHOR = '老田'
+
+# 简易 markdown → HTML (博客文章用到的语法有限: #/##/###/-/**/列表/引用)
+def md_to_html(md_text):
+    lines = md_text.split('\n')
+    out = []
+    in_list = False
+    for line in lines:
+        line = line.rstrip()
+        # 标题
+        m = re.match(r'^(#{1,4})\s+(.*)', line)
+        if m:
+            if in_list:
+                out.append('</ul>'); in_list = False
+            lvl = len(m.group(1)) + 1
+            out.append(f'<h{lvl}>{html.escape(m.group(2))}</h{lvl}>')
+            continue
+        # 列表项
+        if re.match(r'^\s*[-*]\s+', line):
+            if not in_list:
+                out.append('<ul>'); in_list = True
+            item_text = re.sub(r'^\s*[-*]\s+', '', line)
+            out.append(f'<li>{html.escape(item_text)}</li>')
+            continue
+        if in_list and not line.strip():
+            out.append('</ul>'); in_list = False
+            continue
+        # 引用
+        if line.startswith('>'):
+            out.append(f'<blockquote>{html.escape(line[1:].strip())}</blockquote>')
+            continue
+        # 分隔线
+        if re.match(r'^-{3,}$', line.strip()):
+            out.append('<hr>')
+            continue
+        # 空行
+        if not line.strip():
+            if in_list:
+                out.append('</ul>'); in_list = False
+            continue
+        # 正文 (加粗/行内代码)
+        t = html.escape(line)
+        t = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', t)
+        t = re.sub(r'`(.+?)`', r'<code>\1</code>', t)
+        out.append(f'<p>{t}</p>')
+    if in_list:
+        out.append('</ul>')
+    return '\n'.join(out)
+
+
+def parse_blog_md(path):
+    with open(path, encoding='utf-8') as f:
+        text = f.read()
+    # front matter
+    m = re.match(r'^---\s*\n(.*?)\n---\s*\n', text, re.S)
+    meta = {}
+    body = text
+    if m:
+        for kv in m.group(1).split('\n'):
+            if ':' in kv:
+                k, v = kv.split(':', 1)
+                meta[k.strip()] = v.strip().strip('"\'')
+        body = text[m.end():]
+    title = meta.get('title', os.path.basename(path).replace('.md', ''))
+    return title, body
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--date', default=None)
+    a = ap.parse_args()
+
+    target = a.date or time.strftime('%Y-%m-%d')
+    files = sorted(glob.glob(os.path.join(BLOG_POSTS, '*', f'{target}-*.md')))
+    if not files:
+        print(f'❌ {target} 没有博客文章')
+        return
+    path = files[-1]  # 最新一篇
+    title, body = parse_blog_md(path)
+    print(f'📄 文章: {os.path.basename(path)}')
+    print(f'   标题: {title}, 正文 {len(body)} 字符')
+
+    # 转 HTML
+    content_html = md_to_html(body)
+    content_html = f'<section style="font-size:16px;line-height:1.8;color:#333;">{content_html}</section>'
+
+    # 公众号 API
+    token_url = f'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={APPID}&secret={SECRET}'
+    token = requests.get(token_url, timeout=15).json().get('access_token')
+    if not token:
+        print('❌ token 获取失败')
+        return
+
+    # 生成封面图并上传 (thumb_media_id 必填)
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        W, H = 900, 383
+        img = Image.new('RGB', (W, H))
+        px = img.load()
+        c1, c2 = (102, 126, 234), (118, 75, 162)  # 蓝紫渐变
+        for y in range(H):
+            for x in range(W):
+                t = x / W
+                px[x, y] = (int(c1[0] + (c2[0]-c1[0])*t), int(c1[1] + (c2[1]-c1[1])*t), int(c1[2] + (c2[2]-c1[2])*t))
+        draw = ImageDraw.Draw(img)
+        try:
+            font = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc', 48)
+            font_small = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc', 28)
+        except Exception:
+            font = font_small = None
+        if font:
+            short_title = title[:14] + ('…' if len(title) > 14 else '')
+            draw.text((60, 140), short_title, fill=(255, 255, 255), font=font)
+            draw.text((60, 300), '老田 · 每日一文', fill=(220, 220, 255), font=font_small)
+        cover_path = '/tmp/wechat_cover.jpg'
+        img.save(cover_path, 'JPEG', quality=90)
+        up = requests.post(
+            f'https://api.weixin.qq.com/cgi-bin/material/add_material?access_token={token}&type=image',
+            files={'media': ('cover.jpg', open(cover_path, 'rb'), 'image/jpeg')}, timeout=30).json()
+        thumb_media_id = up.get('media_id', '')
+        print(f'封面: {"✅ " + thumb_media_id[:15] + "…" if thumb_media_id else "❌ " + str(up)}')
+    except Exception as e:
+        print(f'⚠️ 封面生成/上传失败: {e}')
+        thumb_media_id = ''
+
+    url = f'https://api.weixin.qq.com/cgi-bin/draft/add?access_token={token}'
+    article = {
+        "title": title,
+        "author": AUTHOR,
+        "digest": body[:35].replace('\n', ' ').replace('#', '').strip() + '…',
+        "content": content_html,
+        "content_source_url": "",
+        "thumb_media_id": thumb_media_id,
+        "show_cover_pic": 0,
+        "need_open_comment": 0,
+        "only_fans_can_comment": 0
+    }
+    r = requests.post(url, json={"articles": [article]}, timeout=30).json()
+    if 'media_id' in r:
+        print(f'✅ 公众号草稿创建成功: media_id={r["media_id"]}')
+    else:
+        print(f'❌ 草稿创建失败: {r}')
+
+
+if __name__ == '__main__':
+    main()
