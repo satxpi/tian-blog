@@ -5,13 +5,13 @@ wechat_draft_from_blog.py — 把当天博客文章发为公众号草稿
 读 content/posts/*/YYYY-MM-DD-*.md (最新一篇) → markdown 转 HTML → 公众号 draft/add
 用法: sudo python3 scripts/wechat_draft_from_blog.py [--date 2026-08-06]
 """
-import os, sys, re, glob, argparse, time, html
+import os, sys, re, glob, argparse, time, html, json
 import requests
 
 APPID = "wx4d76a79c84e3ebbc"
 SECRET = "72d4248a0d0384384884116ff2470e06"
 BLOG_POSTS = '/data/tian-blog/tian-blog/content/posts'
-AUTHOR = '老田'
+AUTHOR = '生活与简单'
 
 # 简易 markdown → HTML (博客文章用到的语法有限: #/##/###/-/**/列表/引用)
 def md_to_html(md_text):
@@ -148,7 +148,11 @@ def main():
         "need_open_comment": 0,
         "only_fans_can_comment": 0
     }
-    r = requests.post(url, json={"articles": [article]}, timeout=30).json()
+    r = requests.post(
+        url,
+        data=json.dumps({"articles": [article]}, ensure_ascii=False).encode('utf-8'),
+        headers={'Content-Type': 'application/json; charset=utf-8'},
+        timeout=30).json()
     if 'media_id' in r:
         print(f'✅ 公众号草稿创建成功: media_id={r["media_id"]}')
     else:
