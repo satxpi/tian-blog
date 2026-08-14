@@ -13,52 +13,21 @@ SECRET = "72d4248a0d0384384884116ff2470e06"
 BLOG_POSTS = '/data/tian-blog/tian-blog/content/posts'
 AUTHOR = '生活与简单'
 
-# 简易 markdown → HTML (博客文章用到的语法有限: #/##/###/-/**/列表/引用)
+# markdown → 公众号 HTML (正规转换, 微信图文子集)
 def md_to_html(md_text):
-    lines = md_text.split('\n')
-    out = []
-    in_list = False
-    for line in lines:
-        line = line.rstrip()
-        # 标题
-        m = re.match(r'^(#{1,4})\s+(.*)', line)
-        if m:
-            if in_list:
-                out.append('</ul>'); in_list = False
-            lvl = len(m.group(1)) + 1
-            out.append(f'<h{lvl}>{html.escape(m.group(2))}</h{lvl}>')
-            continue
-        # 列表项
-        if re.match(r'^\s*[-*]\s+', line):
-            if not in_list:
-                out.append('<ul>'); in_list = True
-            item_text = re.sub(r'^\s*[-*]\s+', '', line)
-            out.append(f'<li>{html.escape(item_text)}</li>')
-            continue
-        if in_list and not line.strip():
-            out.append('</ul>'); in_list = False
-            continue
-        # 引用
-        if line.startswith('>'):
-            out.append(f'<blockquote>{html.escape(line[1:].strip())}</blockquote>')
-            continue
-        # 分隔线
-        if re.match(r'^-{3,}$', line.strip()):
-            out.append('<hr>')
-            continue
-        # 空行
-        if not line.strip():
-            if in_list:
-                out.append('</ul>'); in_list = False
-            continue
-        # 正文 (加粗/行内代码)
-        t = html.escape(line)
-        t = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', t)
-        t = re.sub(r'`(.+?)`', r'<code>\1</code>', t)
-        out.append(f'<p>{t}</p>')
-    if in_list:
-        out.append('</ul>')
-    return '\n'.join(out)
+    import markdown as _md
+    html = _md.markdown(md_text, extensions=['extra', 'sane_lists'])
+    # 公众号适配: h1/h2 降为 h3 (微信正文标题不宜过大), 代码块转 pre
+    html = html.replace('<h1>', '<h3 style="font-size:18px;font-weight:bold;">').replace('</h1>', '</h3>')
+    html = html.replace('<h2>', '<h3 style="font-size:18px;font-weight:bold;">').replace('</h2>', '</h3>')
+    html = html.replace('<h3>', '<h3 style="font-size:17px;font-weight:bold;">')
+    html = html.replace('<blockquote>', '<blockquote style="border-left:3px solid #d9d9d9;padding-left:10px;color:#888;margin:10px 0;">')
+    html = html.replace('<hr>', '<hr style="border:none;border-top:1px solid #eee;margin:15px 0;">')
+    html = html.replace('<table>', '<table style="border-collapse:collapse;margin:10px 0;font-size:14px;">')
+    html = html.replace('<th>', '<th style="border:1px solid #ddd;padding:6px 10px;background:#f5f5f5;">')
+    html = html.replace('<td>', '<td style="border:1px solid #ddd;padding:6px 10px;">')
+    html = html.replace('<img ', '<img style="max-width:100%;" ')
+    return html
 
 
 def parse_blog_md(path):
